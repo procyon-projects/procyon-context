@@ -2,7 +2,7 @@ package context
 
 import (
 	"github.com/Rollcomp/procyon-core"
-	"github.com/Rollcomp/procyon-web/server"
+	web "github.com/Rollcomp/procyon-web"
 )
 
 type ApplicationContext interface {
@@ -20,7 +20,7 @@ type ConfigurableApplicationContext interface {
 }
 
 type WebServerApplicationContext struct {
-	webServer *server.WebServer
+	webServer web.Server
 }
 
 func NewWebServerApplicationContext() *WebServerApplicationContext {
@@ -29,8 +29,7 @@ func NewWebServerApplicationContext() *WebServerApplicationContext {
 
 func (ctx *WebServerApplicationContext) createWebServer() {
 	if ctx.webServer == nil {
-		factory := server.NewDefaultWebServerFactory()
-		ctx.webServer = factory.GetWebServer()
+		ctx.webServer, _ = web.GetWebServer()
 	}
 }
 
