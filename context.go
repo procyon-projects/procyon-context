@@ -10,11 +10,15 @@ type ApplicationContext interface {
 	GetStartupTimestamp() int64
 }
 
-type ConfigurableApplicationContext interface {
-	ApplicationContext
+type ConfigurableContext interface {
 	SetEnvironment(environment core.ConfigurableEnvironment)
 	GetEnvironment() core.ConfigurableEnvironment
 	Configure()
+}
+
+type ConfigurableApplicationContext interface {
+	ApplicationContext
+	ConfigurableContext
 }
 
 type GenericApplicationContext struct {
