@@ -2,7 +2,6 @@ package context
 
 import (
 	"github.com/Rollcomp/procyon-core"
-	"log"
 	"sync"
 )
 
@@ -14,7 +13,11 @@ type ApplicationContext interface {
 type ConfigurableContext interface {
 	SetEnvironment(environment core.ConfigurableEnvironment)
 	GetEnvironment() core.ConfigurableEnvironment
+}
+
+type ConfigurableContextAdapter interface {
 	Configure()
+	OnConfigure()
 }
 
 type ConfigurableApplicationContext interface {
@@ -27,11 +30,16 @@ type GenericApplicationContext struct {
 	startupTimestamp int64
 	environment      core.ConfigurableEnvironment
 	mu               sync.RWMutex
+	ConfigurableContextAdapter
 }
 
-func NewGenericApplicationContext() *GenericApplicationContext {
+func NewGenericApplicationContext(configurableContextAdapter ConfigurableContextAdapter) *GenericApplicationContext {
+	if configurableContextAdapter == nil {
+		panic("Configurable Context Adapter must not be null")
+	}
 	return &GenericApplicationContext{
-		mu: sync.RWMutex{},
+		mu:                         sync.RWMutex{},
+		ConfigurableContextAdapter: configurableContextAdapter,
 	}
 }
 
@@ -55,17 +63,9 @@ func (ctx *GenericApplicationContext) GetEnvironment() core.ConfigurableEnvironm
 	return ctx.environment
 }
 
-func (ctx *GenericApplicationContext) CreateEnvironment() core.ConfigurableEnvironment {
-	return core.NewStandardEnvironment()
-}
-
 func (ctx *GenericApplicationContext) Configure() {
 	ctx.mu.Lock()
 	// TODO complete this part
 	ctx.OnConfigure()
 	ctx.mu.Unlock()
-}
-
-func (ctx *GenericApplicationContext) OnConfigure() {
-	log.Print("Default OnConfigure")
 }

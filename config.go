@@ -7,5 +7,13 @@ type Configuration interface {
 }
 
 type ActivateConfigurationProperties interface {
-	ConfigurationProperties() []ConfigurationProperties
+	ConfigurationProperties() []one.Func
+}
+
+type ImportConfiguration interface {
+	Imports() []one.Func
+}
+
+type ConfigurationCollection interface {
+	Configurations() []one.Func
 }
