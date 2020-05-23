@@ -2,6 +2,7 @@ package context
 
 import (
 	"github.com/Rollcomp/procyon-core"
+	"log"
 	"sync"
 )
 
@@ -61,5 +62,10 @@ func (ctx *GenericApplicationContext) CreateEnvironment() core.ConfigurableEnvir
 func (ctx *GenericApplicationContext) Configure() {
 	ctx.mu.Lock()
 	// TODO complete this part
+	ctx.OnConfigure()
 	ctx.mu.Unlock()
+}
+
+func (ctx *GenericApplicationContext) OnConfigure() {
+	log.Print("Default OnConfigure")
 }
