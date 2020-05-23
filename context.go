@@ -2,36 +2,60 @@ package context
 
 import (
 	"github.com/Rollcomp/procyon-core"
-	web "github.com/Rollcomp/procyon-web"
+	"sync"
 )
 
 type ApplicationContext interface {
 	GetApplicationName() string
-	GetStartupTimeStamp() int64
-}
-
-type WebApplicationContext interface {
-	ApplicationContext
+	GetStartupTimestamp() int64
 }
 
 type ConfigurableApplicationContext interface {
+	ApplicationContext
 	SetEnvironment(environment core.ConfigurableEnvironment)
 	GetEnvironment() core.ConfigurableEnvironment
+	Configure()
 }
 
-type WebServerApplicationContext struct {
-	webServer web.Server
+type GenericApplicationContext struct {
+	name             string
+	startupTimestamp int64
+	environment      core.ConfigurableEnvironment
+	mu               sync.RWMutex
 }
 
-func NewWebServerApplicationContext() *WebServerApplicationContext {
-	return &WebServerApplicationContext{}
-}
-
-func (ctx *WebServerApplicationContext) createWebServer() {
-	if ctx.webServer == nil {
-		ctx.webServer, _ = web.GetWebServer()
+func NewGenericApplicationContext() *GenericApplicationContext {
+	return &GenericApplicationContext{
+		mu: sync.RWMutex{},
 	}
 }
 
-type DefaultWebServerApplicationContext struct {
+func (ctx *GenericApplicationContext) SetApplicationName(name string) {
+	ctx.name = name
+}
+
+func (ctx *GenericApplicationContext) GetApplicationName() string {
+	return ctx.name
+}
+
+func (ctx *GenericApplicationContext) GetStartupTimestamp() int64 {
+	return ctx.startupTimestamp
+}
+
+func (ctx *GenericApplicationContext) SetEnvironment(environment core.ConfigurableEnvironment) {
+	ctx.environment = environment
+}
+
+func (ctx *GenericApplicationContext) GetEnvironment() core.ConfigurableEnvironment {
+	return ctx.environment
+}
+
+func (ctx *GenericApplicationContext) CreateEnvironment() core.ConfigurableEnvironment {
+	return core.NewStandardEnvironment()
+}
+
+func (ctx *GenericApplicationContext) Configure() {
+	ctx.mu.Lock()
+	// TODO complete this part
+	ctx.mu.Unlock()
 }
