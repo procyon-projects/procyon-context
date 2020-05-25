@@ -104,5 +104,5 @@ func NewApplicationContextClosedEvent(source ApplicationContext) ApplicationCont
 }
 
 func (event ApplicationContextClosedEvent) GetName() string {
-	return "procyon.event.ContextClosedEvent"
+	return "procyon.event.ApplicationContextClosedEvent"
 }
