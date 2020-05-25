@@ -7,7 +7,7 @@ import (
 )
 
 type ApplicationContext interface {
-	peas.PeaFactory
+	peas.ConfigurablePeaFactory
 	GetApplicationName() string
 	GetStartupTimestamp() int64
 }
@@ -15,7 +15,7 @@ type ApplicationContext interface {
 type ConfigurableContext interface {
 	SetEnvironment(environment core.ConfigurableEnvironment)
 	GetEnvironment() core.ConfigurableEnvironment
-	GetPeaFactory() peas.PeaFactory
+	GetPeaFactory() peas.ConfigurablePeaFactory
 }
 
 type ConfigurableContextAdapter interface {
@@ -33,7 +33,7 @@ type GenericApplicationContext struct {
 	startupTimestamp int64
 	environment      core.ConfigurableEnvironment
 	mu               sync.RWMutex
-	peaFactory       peas.PeaFactory
+	peaFactory       peas.ConfigurablePeaFactory
 	ConfigurableContextAdapter
 }
 
@@ -75,7 +75,7 @@ func (ctx *GenericApplicationContext) Configure() {
 	ctx.mu.Unlock()
 }
 
-func (ctx *GenericApplicationContext) GetPeaFactory() peas.PeaFactory {
+func (ctx *GenericApplicationContext) GetPeaFactory() peas.ConfigurablePeaFactory {
 	return ctx.peaFactory
 }
 
