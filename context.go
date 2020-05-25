@@ -2,10 +2,12 @@ package context
 
 import (
 	"github.com/Rollcomp/procyon-core"
+	"github.com/Rollcomp/procyon-peas"
 	"sync"
 )
 
 type ApplicationContext interface {
+	peas.PeaFactory
 	GetApplicationName() string
 	GetStartupTimestamp() int64
 }
