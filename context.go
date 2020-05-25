@@ -98,3 +98,23 @@ func (ctx *GenericApplicationContext) GetPeaByType(typ *core.Type) (interface{},
 func (ctx *GenericApplicationContext) ContainsPea(name string) (interface{}, error) {
 	return nil, nil
 }
+
+func (ctx *GenericApplicationContext) RegisterSharedPea(peaName string, sharedObject interface{}) {
+
+}
+
+func (ctx *GenericApplicationContext) GetSharedPea(peaName string) interface{} {
+	return nil
+}
+
+func (ctx *GenericApplicationContext) ContainsSharedPea(peaName string) bool {
+	return false
+}
+
+func (ctx *GenericApplicationContext) GetSharedPeaNames() []string {
+	return nil
+}
+
+func (ctx *GenericApplicationContext) GetSharedPeaCount() int {
+	return 0
+}
