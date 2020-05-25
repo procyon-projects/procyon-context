@@ -15,6 +15,7 @@ type ApplicationContext interface {
 type ConfigurableContext interface {
 	SetEnvironment(environment core.ConfigurableEnvironment)
 	GetEnvironment() core.ConfigurableEnvironment
+	GetPeaFactory() peas.PeaFactory
 }
 
 type ConfigurableContextAdapter interface {
@@ -32,6 +33,7 @@ type GenericApplicationContext struct {
 	startupTimestamp int64
 	environment      core.ConfigurableEnvironment
 	mu               sync.RWMutex
+	peaFactory       peas.PeaFactory
 	ConfigurableContextAdapter
 }
 
@@ -42,6 +44,7 @@ func NewGenericApplicationContext(configurableContextAdapter ConfigurableContext
 	return &GenericApplicationContext{
 		mu:                         sync.RWMutex{},
 		ConfigurableContextAdapter: configurableContextAdapter,
+		peaFactory:                 peas.NewDefaultPeaFactory(),
 	}
 }
 
@@ -70,4 +73,28 @@ func (ctx *GenericApplicationContext) Configure() {
 	// TODO complete this part
 	ctx.OnConfigure()
 	ctx.mu.Unlock()
+}
+
+func (ctx *GenericApplicationContext) GetPeaFactory() peas.PeaFactory {
+	return ctx.peaFactory
+}
+
+func (ctx *GenericApplicationContext) GetPea(name string) (interface{}, error) {
+	return nil, nil
+}
+
+func (ctx *GenericApplicationContext) GetPeaByNameAndType(name string, typ *core.Type) (interface{}, error) {
+	return nil, nil
+}
+
+func (ctx *GenericApplicationContext) GetPeaByNameAndArgs(name string, args ...interface{}) (interface{}, error) {
+	return nil, nil
+}
+
+func (ctx *GenericApplicationContext) GetPeaByType(typ *core.Type) (interface{}, error) {
+	return nil, nil
+}
+
+func (ctx *GenericApplicationContext) ContainsPea(name string) (interface{}, error) {
+	return nil, nil
 }
