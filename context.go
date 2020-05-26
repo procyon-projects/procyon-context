@@ -29,11 +29,12 @@ type ConfigurableApplicationContext interface {
 }
 
 type GenericApplicationContext struct {
-	name             string
-	startupTimestamp int64
-	environment      core.ConfigurableEnvironment
-	mu               sync.RWMutex
-	peaFactory       peas.ConfigurablePeaFactory
+	name                        string
+	startupTimestamp            int64
+	environment                 core.ConfigurableEnvironment
+	mu                          sync.RWMutex
+	peaFactory                  peas.ConfigurablePeaFactory
+	applicationEventBroadcaster ApplicationEventBroadcaster
 	ConfigurableContextAdapter
 }
 
@@ -70,9 +71,21 @@ func (ctx *GenericApplicationContext) GetEnvironment() core.ConfigurableEnvironm
 
 func (ctx *GenericApplicationContext) Configure() {
 	ctx.mu.Lock()
-	// TODO complete this part
+	/* application event broadcaster */
+	ctx.initApplicationEventBroadcaster()
+	/* custom configure */
 	ctx.OnConfigure()
+	/* register application event listeners */
+	ctx.registerApplicationEventListeners()
 	ctx.mu.Unlock()
+}
+
+func (ctx *GenericApplicationContext) initApplicationEventBroadcaster() {
+	ctx.applicationEventBroadcaster = NewSimpleApplicationEventBroadcaster(ctx.peaFactory)
+}
+
+func (ctx *GenericApplicationContext) registerApplicationEventListeners() {
+
 }
 
 func (ctx *GenericApplicationContext) GetPeaFactory() peas.ConfigurablePeaFactory {
