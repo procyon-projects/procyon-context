@@ -20,7 +20,14 @@ type DefaultApplicationEventListenerRetriever struct {
 	peaFactory           peas.ConfigurablePeaFactory
 }
 
-func NewDefaultApplicationEventListenerRetriever(factory peas.ConfigurablePeaFactory) DefaultApplicationEventListenerRetriever {
+func NewDefaultApplicationEventListenerRetriever() DefaultApplicationEventListenerRetriever {
+	return DefaultApplicationEventListenerRetriever{
+		appEventListeners:    make(map[string]ApplicationListener, 0),
+		appEventListenerPeas: make(map[string]interface{}, 0),
+	}
+}
+
+func NewDefaultApplicationEventListenerRetrieverWithFactory(factory peas.ConfigurablePeaFactory) DefaultApplicationEventListenerRetriever {
 	if factory == nil {
 		panic("Pea Factory must not be null")
 	}
@@ -36,11 +43,13 @@ func (retriever DefaultApplicationEventListenerRetriever) GetApplicationListener
 	for key := range retriever.appEventListeners {
 		listeners = append(listeners, retriever.appEventListeners[key])
 	}
-	for peaName := range retriever.appEventListenerPeas {
-		if peaName != "" {
-			peaObj, err := retriever.peaFactory.GetPeaByNameAndType(peaName, core.GetType((*ApplicationListener)(nil)))
-			if err != nil {
-				listeners = append(listeners, peaObj.(ApplicationListener))
+	if retriever.peaFactory != nil {
+		for peaName := range retriever.appEventListenerPeas {
+			if peaName != "" {
+				peaObj, err := retriever.peaFactory.GetPeaByNameAndType(peaName, core.GetType((*ApplicationListener)(nil)))
+				if err != nil {
+					listeners = append(listeners, peaObj.(ApplicationListener))
+				}
 			}
 		}
 	}

@@ -22,13 +22,20 @@ type BaseApplicationEventBroadcaster struct {
 	mu                     sync.RWMutex
 }
 
-func NewBaseApplicationEventBroadcaster(factory peas.ConfigurablePeaFactory) *BaseApplicationEventBroadcaster {
+func NewBaseApplicationEventBroadcaster() *BaseApplicationEventBroadcaster {
+	return &BaseApplicationEventBroadcaster{
+		eventListenerRetriever: NewDefaultApplicationEventListenerRetriever(),
+		mu:                     sync.RWMutex{},
+	}
+}
+
+func NewBaseApplicationEventBroadcasterWithFactory(factory peas.ConfigurablePeaFactory) *BaseApplicationEventBroadcaster {
 	if factory == nil {
 		panic("Pea Factory must not be null")
 	}
 	return &BaseApplicationEventBroadcaster{
 		peaFactory:             factory,
-		eventListenerRetriever: NewDefaultApplicationEventListenerRetriever(factory),
+		eventListenerRetriever: NewDefaultApplicationEventListenerRetrieverWithFactory(factory),
 		mu:                     sync.RWMutex{},
 	}
 }
@@ -91,14 +98,18 @@ func (broadcaster *BaseApplicationEventBroadcaster) supportsEvent(listener Appli
 }
 
 type SimpleApplicationEventBroadcaster struct {
-	workAsAsync bool
 	*BaseApplicationEventBroadcaster
 }
 
-func NewSimpleApplicationEventBroadcaster(factory peas.ConfigurablePeaFactory) *SimpleApplicationEventBroadcaster {
+func NewSimpleApplicationEventBroadcaster() *SimpleApplicationEventBroadcaster {
 	return &SimpleApplicationEventBroadcaster{
-		workAsAsync:                     true,
-		BaseApplicationEventBroadcaster: NewBaseApplicationEventBroadcaster(factory),
+		BaseApplicationEventBroadcaster: NewBaseApplicationEventBroadcaster(),
+	}
+}
+
+func NewSimpleApplicationEventBroadcasterWithFactory(factory peas.ConfigurablePeaFactory) *SimpleApplicationEventBroadcaster {
+	return &SimpleApplicationEventBroadcaster{
+		BaseApplicationEventBroadcaster: NewBaseApplicationEventBroadcasterWithFactory(factory),
 	}
 }
 
