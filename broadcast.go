@@ -90,7 +90,13 @@ func (broadcaster *BaseApplicationEventBroadcaster) GetApplicationListeners(even
 func (broadcaster *BaseApplicationEventBroadcaster) supportsEvent(listener ApplicationListener, event ApplicationEvent) bool {
 	subscribedEvents := listener.SubscribeEvents()
 	for _, subscribedEvent := range subscribedEvents {
-		if core.IsEmbeddedStruct(core.GetType(subscribedEvent), core.GetType(event)) {
+		subscribedEventType := core.GetType(subscribedEvent)
+		eventType := core.GetType(event)
+		if core.IsInterface(subscribedEventType) && eventType.Typ.Implements(subscribedEventType.Typ) {
+			return true
+		} else if subscribedEventType.Typ == eventType.Typ {
+			return true
+		} else if core.IsStruct(subscribedEventType) && core.IsEmbeddedStruct(eventType, subscribedEventType) {
 			return true
 		}
 	}
