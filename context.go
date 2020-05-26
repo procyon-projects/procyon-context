@@ -81,7 +81,7 @@ func (ctx *GenericApplicationContext) Configure() {
 }
 
 func (ctx *GenericApplicationContext) initApplicationEventBroadcaster() {
-	ctx.applicationEventBroadcaster = NewSimpleApplicationEventBroadcaster(ctx.peaFactory)
+	ctx.applicationEventBroadcaster = NewSimpleApplicationEventBroadcasterWithFactory(ctx.peaFactory)
 }
 
 func (ctx *GenericApplicationContext) registerApplicationEventListeners() {
