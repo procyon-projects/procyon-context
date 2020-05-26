@@ -4,7 +4,6 @@ import "time"
 
 type ApplicationEvent interface {
 	GetSource() interface{}
-	GetName() string
 	GetTimestamp() int64
 }
 
@@ -26,10 +25,6 @@ func (appEvent BaseApplicationEvent) GetSource() interface{} {
 
 func (appEvent BaseApplicationEvent) GetTimestamp() int64 {
 	return appEvent.timestamp
-}
-
-func (appEvent BaseApplicationEvent) GetName() string {
-	panic("Implement me!. This is an abstract method. BaseApplicationEvent.GetName()")
 }
 
 type ApplicationContextEvent interface {
@@ -61,10 +56,6 @@ func NewApplicationContextStartedEvent(source ApplicationContext) ApplicationCon
 	}
 }
 
-func (event ApplicationContextStartedEvent) GetName() string {
-	return "procyon.event.ApplicationContextStartedEvent"
-}
-
 type ApplicationContextStoppedEvent struct {
 	BaseApplicationContextEvent
 }
@@ -73,10 +64,6 @@ func NewApplicationContextStoppedEvent(source ApplicationContext) ApplicationCon
 	return ApplicationContextStoppedEvent{
 		NewBaseApplicationContextEvent(source),
 	}
-}
-
-func (event ApplicationContextStoppedEvent) GetName() string {
-	return "procyon.event.ApplicationContextStoppedEvent"
 }
 
 type ApplicationContextRefreshedEvent struct {
@@ -89,10 +76,6 @@ func NewApplicationContextRefreshedEvent(source ApplicationContext) ApplicationC
 	}
 }
 
-func (event ApplicationContextRefreshedEvent) GetName() string {
-	return "procyon.event.ApplicationContextRefreshedEvent"
-}
-
 type ApplicationContextClosedEvent struct {
 	BaseApplicationContextEvent
 }
@@ -101,8 +84,4 @@ func NewApplicationContextClosedEvent(source ApplicationContext) ApplicationCont
 	return ApplicationContextClosedEvent{
 		NewBaseApplicationContextEvent(source),
 	}
-}
-
-func (event ApplicationContextClosedEvent) GetName() string {
-	return "procyon.event.ApplicationContextClosedEvent"
 }
