@@ -71,7 +71,7 @@ func (broadcaster *BaseApplicationEventBroadcaster) GetApplicationListeners(even
 	broadcaster.mu.Lock()
 	listeners := broadcaster.eventListenerRetriever.GetApplicationListeners()
 	broadcaster.mu.Unlock()
-	supportListeners := make([]ApplicationListener, defaultEventListenerRetrieverSize)
+	supportListeners := make([]ApplicationListener, 0)
 	for _, listener := range listeners {
 		if broadcaster.supportsEvent(listener, event) {
 			supportListeners = append(supportListeners, listener)

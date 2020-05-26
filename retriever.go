@@ -5,8 +5,6 @@ import (
 	peas "github.com/Rollcomp/procyon-peas"
 )
 
-const defaultEventListenerRetrieverSize = 16
-
 type ApplicationEventListenerRetriever interface {
 	GetApplicationListeners() []ApplicationListener
 	AddApplicationListener(listener ApplicationListener)
@@ -27,14 +25,14 @@ func NewDefaultApplicationEventListenerRetriever(factory peas.ConfigurablePeaFac
 		panic("Pea Factory must not be null")
 	}
 	return DefaultApplicationEventListenerRetriever{
-		appEventListeners:    make(map[string]ApplicationListener, defaultEventListenerRetrieverSize),
-		appEventListenerPeas: make(map[string]interface{}, defaultEventListenerRetrieverSize),
+		appEventListeners:    make(map[string]ApplicationListener, 0),
+		appEventListenerPeas: make(map[string]interface{}, 0),
 		peaFactory:           factory,
 	}
 }
 
 func (retriever DefaultApplicationEventListenerRetriever) GetApplicationListeners() []ApplicationListener {
-	listeners := make([]ApplicationListener, defaultEventListenerRetrieverSize)
+	listeners := make([]ApplicationListener, 0)
 	for key := range retriever.appEventListeners {
 		listeners = append(listeners, retriever.appEventListeners[key])
 	}
@@ -82,6 +80,6 @@ func (retriever DefaultApplicationEventListenerRetriever) RemoveApplicationListe
 }
 
 func (retriever DefaultApplicationEventListenerRetriever) RemoveAllApplicationListeners() {
-	retriever.appEventListeners = make(map[string]ApplicationListener, defaultEventListenerRetrieverSize)
-	retriever.appEventListenerPeas = make(map[string]interface{}, defaultEventListenerRetrieverSize)
+	retriever.appEventListeners = make(map[string]ApplicationListener, 0)
+	retriever.appEventListenerPeas = make(map[string]interface{}, 0)
 }
