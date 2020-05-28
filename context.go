@@ -71,20 +71,26 @@ func (ctx *GenericApplicationContext) GetEnvironment() core.ConfigurableEnvironm
 
 func (ctx *GenericApplicationContext) Configure() {
 	ctx.mu.Lock()
+	/* pea processors */
+	ctx.initPeaProcessors()
 	/* application event broadcaster */
 	ctx.initApplicationEventBroadcaster()
 	/* custom configure */
 	ctx.OnConfigure()
-	/* register application event listeners */
-	ctx.registerApplicationEventListeners()
+	/* application event listeners */
+	ctx.initApplicationEventListeners()
 	ctx.mu.Unlock()
+}
+
+func (ctx *GenericApplicationContext) initPeaProcessors() {
+
 }
 
 func (ctx *GenericApplicationContext) initApplicationEventBroadcaster() {
 	ctx.applicationEventBroadcaster = NewSimpleApplicationEventBroadcasterWithFactory(ctx.peaFactory)
 }
 
-func (ctx *GenericApplicationContext) registerApplicationEventListeners() {
+func (ctx *GenericApplicationContext) initApplicationEventListeners() {
 
 }
 
