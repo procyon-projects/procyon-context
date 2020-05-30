@@ -78,6 +78,10 @@ func (ctx *GenericApplicationContext) AddApplicationListener(listener Applicatio
 	ctx.applicationListeners = append(ctx.applicationListeners, listener)
 }
 
+func (ctx *GenericApplicationContext) GetApplicationListeners() []ApplicationListener {
+	return ctx.applicationListeners
+}
+
 func (ctx *GenericApplicationContext) PublishEvent(event ApplicationEvent) {
 	ctx.applicationEventBroadcaster.BroadcastEvent(event)
 }
@@ -104,7 +108,10 @@ func (ctx *GenericApplicationContext) initApplicationEventBroadcaster() {
 }
 
 func (ctx *GenericApplicationContext) initApplicationEventListeners() {
-
+	appListeners := ctx.GetApplicationListeners()
+	for _, appListener := range appListeners {
+		ctx.applicationEventBroadcaster.RegisterApplicationListener(appListener)
+	}
 }
 
 func (ctx *GenericApplicationContext) GetPeaFactory() peas.ConfigurablePeaFactory {
