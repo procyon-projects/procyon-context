@@ -16,6 +16,7 @@ type ConfigurableContext interface {
 	SetEnvironment(environment core.ConfigurableEnvironment)
 	GetEnvironment() core.ConfigurableEnvironment
 	GetPeaFactory() peas.ConfigurablePeaFactory
+	AddApplicationListener(listener ApplicationListener)
 }
 
 type ConfigurableContextAdapter interface {
@@ -29,13 +30,14 @@ type ConfigurableApplicationContext interface {
 }
 
 type GenericApplicationContext struct {
+	ConfigurableContextAdapter
 	name                        string
 	startupTimestamp            int64
 	environment                 core.ConfigurableEnvironment
 	mu                          sync.RWMutex
 	peaFactory                  peas.ConfigurablePeaFactory
 	applicationEventBroadcaster ApplicationEventBroadcaster
-	ConfigurableContextAdapter
+	applicationListeners        []ApplicationListener
 }
 
 func NewGenericApplicationContext(configurableContextAdapter ConfigurableContextAdapter) *GenericApplicationContext {
@@ -67,6 +69,17 @@ func (ctx *GenericApplicationContext) SetEnvironment(environment core.Configurab
 
 func (ctx *GenericApplicationContext) GetEnvironment() core.ConfigurableEnvironment {
 	return ctx.environment
+}
+
+func (ctx *GenericApplicationContext) AddApplicationListener(listener ApplicationListener) {
+	if ctx.applicationEventBroadcaster != nil {
+		ctx.applicationEventBroadcaster.RegisterApplicationListener(listener)
+	}
+	ctx.applicationListeners = append(ctx.applicationListeners, listener)
+}
+
+func (ctx *GenericApplicationContext) PublishEvent(event ApplicationEvent) {
+	ctx.applicationEventBroadcaster.BroadcastEvent(event)
 }
 
 func (ctx *GenericApplicationContext) Configure() {
