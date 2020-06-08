@@ -2,8 +2,8 @@ package context
 
 import (
 	"fmt"
-	core "github.com/Rollcomp/procyon-core"
-	peas "github.com/Rollcomp/procyon-peas"
+	core "github.com/procyon-projects/procyon-core"
+	peas "github.com/procyon-projects/procyon-peas"
 	"sync"
 )
 

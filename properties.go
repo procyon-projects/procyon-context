@@ -2,7 +2,7 @@ package context
 
 import (
 	"errors"
-	core "github.com/Rollcomp/procyon-core"
+	core "github.com/procyon-projects/procyon-core"
 	"reflect"
 )
 
@@ -47,7 +47,7 @@ func (binder ConfigurationPropertiesBinder) bindTargetFields(prefix string, targ
 		defaultValue := structField.Tag.Get("default")
 		jsonTagValue := structField.Tag.Get("json")
 		yamlTagValue := structField.Tag.Get("yaml")
-		field := core.GetFieldByIndex(targetTyp, index)
+		field := core.GetFieldValueByIndex(targetTyp, index)
 		if jsonTagValue != "" {
 			binder.bindTargetField(field, binder.getFullPropertyName(prefix, jsonTagValue), defaultValue)
 		} else if yamlTagValue != "" {

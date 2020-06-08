@@ -1,8 +1,8 @@
 package context
 
 import (
-	"github.com/Rollcomp/procyon-core"
-	"github.com/Rollcomp/procyon-peas"
+	"github.com/procyon-projects/procyon-core"
+	"github.com/procyon-projects/procyon-peas"
 	"sync"
 )
 

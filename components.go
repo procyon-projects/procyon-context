@@ -1,6 +1,6 @@
 package context
 
-import core "github.com/Rollcomp/procyon-core"
+import core "github.com/procyon-projects/procyon-core"
 
 type RepositoryMetadata struct {
 	typ *core.Type
