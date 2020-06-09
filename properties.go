@@ -11,15 +11,18 @@ type ConfigurationProperties interface {
 }
 
 type ConfigurationPropertiesBinder struct {
-	context         ConfigurableApplicationContext
-	propertySources *core.PropertySources
+	context          ConfigurableApplicationContext
+	propertyResolver core.PropertyResolver
+	converterService core.TypeConverterService
 }
 
-func NewConfigurationPropertiesBinder(context ConfigurableApplicationContext) ConfigurationPropertiesBinder {
-	return ConfigurationPropertiesBinder{
-		context:         context,
-		propertySources: context.GetEnvironment().GetPropertySources(),
+func NewConfigurationPropertiesBinder(context ConfigurableApplicationContext, converterService core.TypeConverterService) ConfigurationPropertiesBinder {
+	binder := ConfigurationPropertiesBinder{
+		context:          context,
+		converterService: converterService,
 	}
+	binder.propertyResolver = core.NewSimplePropertyResolver(context.GetEnvironment().GetPropertySources())
+	return binder
 }
 
 func (binder ConfigurationPropertiesBinder) Bind(target interface{}) error {
@@ -48,19 +51,25 @@ func (binder ConfigurationPropertiesBinder) bindTargetFields(prefix string, targ
 		jsonTagValue := structField.Tag.Get("json")
 		yamlTagValue := structField.Tag.Get("yaml")
 		field := core.GetFieldValueByIndex(targetTyp, index)
+		fieldType := &core.Type{Val: field}
 		if jsonTagValue != "" {
-			binder.bindTargetField(field, binder.getFullPropertyName(prefix, jsonTagValue), defaultValue)
+			binder.bindTargetField(fieldType, binder.getFullPropertyName(prefix, jsonTagValue), defaultValue)
 		} else if yamlTagValue != "" {
-			binder.bindTargetField(field, binder.getFullPropertyName(prefix, yamlTagValue), defaultValue)
+			binder.bindTargetField(fieldType, binder.getFullPropertyName(prefix, yamlTagValue), defaultValue)
 		}
 	}
 	return nil
 }
 
-func (binder ConfigurationPropertiesBinder) bindTargetField(field reflect.Value, propertyName string, defaultValue string) {
-	// conversion for value will be added
-	if field.IsValid() && field.CanSet() {
-
+func (binder ConfigurationPropertiesBinder) bindTargetField(fieldType *core.Type, propertyName string, defaultValue string) {
+	propertyValue := binder.propertyResolver.GetProperty(propertyName, defaultValue)
+	if propertyValue != nil {
+		if fieldType.Val.IsValid() && fieldType.Val.CanSet() {
+			if binder.converterService.CanConvert(core.GetType(propertyValue), fieldType) {
+				value := binder.converterService.Convert(propertyValue, core.GetType(propertyValue), fieldType)
+				fieldType.Val.Set(reflect.ValueOf(value))
+			}
+		}
 	}
 }
 
