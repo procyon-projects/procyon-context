@@ -1,7 +1,6 @@
 package context
 
 import (
-	"fmt"
 	core "github.com/procyon-projects/procyon-core"
 	peas "github.com/procyon-projects/procyon-peas"
 	"sync"
@@ -129,7 +128,7 @@ func (broadcaster *SimpleApplicationEventBroadcaster) BroadcastEvent(event Appli
 func (broadcaster *SimpleApplicationEventBroadcaster) invokeListener(listener ApplicationListener, event ApplicationEvent) {
 	defer func() {
 		if r := recover(); r != nil {
-			fmt.Print("While invoking an application listener, the error occurred : \n", r)
+			core.Logger.Error("While invoking an application listener, the error occurred : \n", r)
 		}
 	}()
 	listener.OnApplicationEvent(event)
