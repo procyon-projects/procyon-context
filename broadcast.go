@@ -121,7 +121,7 @@ func NewSimpleApplicationEventBroadcasterWithFactory(factory peas.ConfigurablePe
 func (broadcaster *SimpleApplicationEventBroadcaster) BroadcastEvent(event ApplicationEvent) {
 	listeners := broadcaster.GetApplicationListeners(event)
 	for _, listener := range listeners {
-		go broadcaster.invokeListener(listener, event)
+		broadcaster.invokeListener(listener, event)
 	}
 }
 
