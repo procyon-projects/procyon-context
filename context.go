@@ -47,15 +47,10 @@ func NewGenericApplicationContext(configurableContextAdapter ConfigurableContext
 	if configurableContextAdapter == nil {
 		core.Logger.Fatal("Configurable Context Adapter must not be null")
 	}
-	contextId, err := uuid.NewUUID()
-	if err != nil {
-		core.Logger.Fatal("Could not context id for main go thread")
-	}
 	return &GenericApplicationContext{
 		mu:                         sync.RWMutex{},
 		ConfigurableContextAdapter: configurableContextAdapter,
 		peaFactory:                 peas.NewDefaultPeaFactory(),
-		contextId:                  contextId,
 	}
 }
 
