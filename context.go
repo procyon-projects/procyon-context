@@ -1,6 +1,7 @@
 package context
 
 import (
+	"github.com/google/uuid"
 	"github.com/procyon-projects/procyon-core"
 	"github.com/procyon-projects/procyon-peas"
 	"sync"
@@ -8,6 +9,7 @@ import (
 
 type ApplicationContext interface {
 	peas.ConfigurablePeaFactory
+	GetContextId() uuid.UUID
 	GetApplicationName() string
 	GetStartupTimestamp() int64
 }
@@ -31,6 +33,7 @@ type ConfigurableApplicationContext interface {
 
 type GenericApplicationContext struct {
 	ConfigurableContextAdapter
+	contextId                   uuid.UUID
 	name                        string
 	startupTimestamp            int64
 	environment                 core.ConfigurableEnvironment
@@ -42,12 +45,17 @@ type GenericApplicationContext struct {
 
 func NewGenericApplicationContext(configurableContextAdapter ConfigurableContextAdapter) *GenericApplicationContext {
 	if configurableContextAdapter == nil {
-		panic("Configurable Context Adapter must not be null")
+		core.Logger.Fatal("Configurable Context Adapter must not be null")
+	}
+	contextId, err := uuid.NewUUID()
+	if err != nil {
+		core.Logger.Fatal("Could not context id for main go thread")
 	}
 	return &GenericApplicationContext{
 		mu:                         sync.RWMutex{},
 		ConfigurableContextAdapter: configurableContextAdapter,
 		peaFactory:                 peas.NewDefaultPeaFactory(),
+		contextId:                  contextId,
 	}
 }
 
@@ -57,6 +65,10 @@ func (ctx *GenericApplicationContext) SetApplicationName(name string) {
 
 func (ctx *GenericApplicationContext) GetApplicationName() string {
 	return ctx.name
+}
+
+func (ctx *GenericApplicationContext) GetContextId() uuid.UUID {
+	return ctx.contextId
 }
 
 func (ctx *GenericApplicationContext) GetStartupTimestamp() int64 {
