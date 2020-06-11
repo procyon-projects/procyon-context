@@ -11,18 +11,17 @@ type ConfigurationProperties interface {
 }
 
 type ConfigurationPropertiesBinder struct {
-	context          ConfigurableApplicationContext
-	propertyResolver core.PropertyResolver
-	converterService core.TypeConverterService
+	context              ConfigurableApplicationContext
+	env                  core.Environment
+	typeConverterService core.TypeConverterService
 }
 
-func NewConfigurationPropertiesBinder(context ConfigurableApplicationContext, converterService core.TypeConverterService) ConfigurationPropertiesBinder {
-	binder := ConfigurationPropertiesBinder{
-		context:          context,
-		converterService: converterService,
+func NewConfigurationPropertiesBinder(context ConfigurableApplicationContext) ConfigurationPropertiesBinder {
+	return ConfigurationPropertiesBinder{
+		context,
+		context.GetEnvironment(),
+		context.GetEnvironment().GetTypeConverterService(),
 	}
-	binder.propertyResolver = core.NewSimplePropertyResolver(context.GetEnvironment().GetPropertySources())
-	return binder
 }
 
 func (binder ConfigurationPropertiesBinder) Bind(target interface{}) error {
@@ -62,11 +61,11 @@ func (binder ConfigurationPropertiesBinder) bindTargetFields(prefix string, targ
 }
 
 func (binder ConfigurationPropertiesBinder) bindTargetField(fieldType *core.Type, propertyName string, defaultValue string) {
-	propertyValue := binder.propertyResolver.GetProperty(propertyName, defaultValue)
+	propertyValue := binder.env.GetProperty(propertyName, defaultValue)
 	if propertyValue != nil {
 		if fieldType.Val.IsValid() && fieldType.Val.CanSet() {
-			if binder.converterService.CanConvert(core.GetType(propertyValue), fieldType) {
-				value := binder.converterService.Convert(propertyValue, core.GetType(propertyValue), fieldType)
+			if binder.typeConverterService.CanConvert(core.GetType(propertyValue), fieldType) {
+				value := binder.typeConverterService.Convert(propertyValue, core.GetType(propertyValue), fieldType)
 				fieldType.Val.Set(reflect.ValueOf(value))
 			}
 		}
