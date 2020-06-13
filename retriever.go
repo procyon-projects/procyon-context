@@ -29,7 +29,7 @@ func NewDefaultApplicationEventListenerRetriever() DefaultApplicationEventListen
 
 func NewDefaultApplicationEventListenerRetrieverWithFactory(factory peas.ConfigurablePeaFactory) DefaultApplicationEventListenerRetriever {
 	if factory == nil {
-		core.Logger.Fatal("Pea Factory must not be null")
+		core.Log.Fatal("Pea Factory must not be null")
 	}
 	return DefaultApplicationEventListenerRetriever{
 		appEventListeners:    make(map[string]ApplicationListener, 0),
@@ -61,7 +61,7 @@ func (retriever DefaultApplicationEventListenerRetriever) AddApplicationListener
 	if core.IsStruct(typ) {
 		retriever.appEventListeners[typ.String()] = listener
 	} else {
-		core.Logger.Error("It must be struct")
+		core.Log.Error("It must be struct")
 	}
 }
 
@@ -77,7 +77,7 @@ func (retriever DefaultApplicationEventListenerRetriever) RemoveApplicationListe
 			delete(retriever.appEventListeners, typ.String())
 		}
 	} else {
-		core.Logger.Error("It must be struct")
+		core.Log.Error("It must be struct")
 	}
 }
 

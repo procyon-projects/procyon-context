@@ -22,7 +22,7 @@ func (processor *ConfigurationPropertiesBindingProcessor) AfterProperties() {
 func (processor *ConfigurationPropertiesBindingProcessor) BeforeInitialization(peaName string, pea interface{}) (interface{}, error) {
 	err := processor.binder.Bind(pea)
 	if err != nil {
-		core.Logger.Error("Error occurred while configuration properties was being binding to pea instance : ", peaName)
+		core.Log.Error("Error occurred while configuration properties was being binding to pea instance : ", peaName)
 	}
 	return pea, err
 }

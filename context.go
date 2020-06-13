@@ -9,7 +9,7 @@ import (
 
 type ApplicationContext interface {
 	peas.ConfigurablePeaFactory
-	GetContextId() uuid.UUID
+	GetAppId() uuid.UUID
 	GetApplicationName() string
 	GetStartupTimestamp() int64
 }
@@ -33,7 +33,7 @@ type ConfigurableApplicationContext interface {
 
 type GenericApplicationContext struct {
 	ConfigurableContextAdapter
-	contextId                   uuid.UUID
+	appId                       uuid.UUID
 	name                        string
 	startupTimestamp            int64
 	environment                 core.ConfigurableEnvironment
@@ -45,7 +45,7 @@ type GenericApplicationContext struct {
 
 func NewGenericApplicationContext(configurableContextAdapter ConfigurableContextAdapter) *GenericApplicationContext {
 	if configurableContextAdapter == nil {
-		core.Logger.Fatal("Configurable Context Adapter must not be null")
+		core.Log.Fatal("Configurable Context Adapter must not be null")
 	}
 	return &GenericApplicationContext{
 		mu:                         sync.RWMutex{},
@@ -62,8 +62,8 @@ func (ctx *GenericApplicationContext) GetApplicationName() string {
 	return ctx.name
 }
 
-func (ctx *GenericApplicationContext) GetContextId() uuid.UUID {
-	return ctx.contextId
+func (ctx *GenericApplicationContext) GetAppId() uuid.UUID {
+	return ctx.appId
 }
 
 func (ctx *GenericApplicationContext) GetStartupTimestamp() int64 {

@@ -128,7 +128,7 @@ func (broadcaster *SimpleApplicationEventBroadcaster) BroadcastEvent(event Appli
 func (broadcaster *SimpleApplicationEventBroadcaster) invokeListener(listener ApplicationListener, event ApplicationEvent) {
 	defer func() {
 		if r := recover(); r != nil {
-			core.Logger.Error("While invoking an application listener, the error occurred : \n", r)
+			core.Log.Error("While invoking an application listener, the error occurred : \n", r)
 		}
 	}()
 	listener.OnApplicationEvent(event)
