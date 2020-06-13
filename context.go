@@ -15,6 +15,8 @@ type ApplicationContext interface {
 }
 
 type ConfigurableContext interface {
+	SetLogger(logger core.Logger)
+	GetLogger() core.Logger
 	SetEnvironment(environment core.ConfigurableEnvironment)
 	GetEnvironment() core.ConfigurableEnvironment
 	GetPeaFactory() peas.ConfigurablePeaFactory
@@ -36,6 +38,7 @@ type GenericApplicationContext struct {
 	appId                       uuid.UUID
 	name                        string
 	startupTimestamp            int64
+	logger                      core.Logger
 	environment                 core.ConfigurableEnvironment
 	mu                          sync.RWMutex
 	peaFactory                  peas.ConfigurablePeaFactory
@@ -76,6 +79,14 @@ func (ctx *GenericApplicationContext) SetEnvironment(environment core.Configurab
 
 func (ctx *GenericApplicationContext) GetEnvironment() core.ConfigurableEnvironment {
 	return ctx.environment
+}
+
+func (ctx *GenericApplicationContext) SetLogger(logger core.Logger) {
+	ctx.logger = logger
+}
+
+func (ctx *GenericApplicationContext) GetLogger() core.Logger {
+	return ctx.logger
 }
 
 func (ctx *GenericApplicationContext) AddApplicationListener(listener ApplicationListener) {
