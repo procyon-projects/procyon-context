@@ -1,6 +1,8 @@
 package context
 
-import core "github.com/procyon-projects/procyon-core"
+import (
+	"errors"
+)
 
 type ConfigurationPropertiesBindingProcessor struct {
 	context ApplicationContext
@@ -22,7 +24,7 @@ func (processor *ConfigurationPropertiesBindingProcessor) AfterProperties() {
 func (processor *ConfigurationPropertiesBindingProcessor) BeforeInitialization(peaName string, pea interface{}) (interface{}, error) {
 	err := processor.binder.Bind(pea)
 	if err != nil {
-		core.Log.Error("Error occurred while configuration properties was being binding to pea instance : ", peaName)
+		return nil, errors.New("error occurred while configuration properties was being binding to pea instance : " + peaName)
 	}
 	return pea, err
 }

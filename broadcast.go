@@ -1,6 +1,8 @@
 package context
 
 import (
+	"errors"
+	"fmt"
 	core "github.com/procyon-projects/procyon-core"
 	peas "github.com/procyon-projects/procyon-peas"
 	"sync"
@@ -12,7 +14,7 @@ type ApplicationEventBroadcaster interface {
 	UnregisterApplicationListener(listener ApplicationListener)
 	UnregisterApplicationListenerByPeaName(peaName string)
 	RemoveAllApplicationListeners()
-	BroadcastEvent(event ApplicationEvent)
+	BroadcastEvent(event ApplicationEvent) error
 }
 
 type BaseApplicationEventBroadcaster struct {
@@ -118,18 +120,23 @@ func NewSimpleApplicationEventBroadcasterWithFactory(factory peas.ConfigurablePe
 	}
 }
 
-func (broadcaster *SimpleApplicationEventBroadcaster) BroadcastEvent(event ApplicationEvent) {
+func (broadcaster *SimpleApplicationEventBroadcaster) BroadcastEvent(event ApplicationEvent) (err error) {
 	listeners := broadcaster.GetApplicationListeners(event)
 	for _, listener := range listeners {
-		broadcaster.invokeListener(listener, event)
+		err = broadcaster.invokeListener(listener, event)
+		if err != nil {
+			break
+		}
 	}
+	return nil
 }
 
-func (broadcaster *SimpleApplicationEventBroadcaster) invokeListener(listener ApplicationListener, event ApplicationEvent) {
+func (broadcaster *SimpleApplicationEventBroadcaster) invokeListener(listener ApplicationListener, event ApplicationEvent) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			core.Log.Error("While invoking an application listener, the error occurred : \n", r)
+			err = errors.New(fmt.Sprintf("while invoking an application listener, the error occurred : %s", r))
 		}
 	}()
 	listener.OnApplicationEvent(event)
+	return nil
 }

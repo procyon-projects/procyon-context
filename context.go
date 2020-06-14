@@ -50,7 +50,7 @@ type GenericApplicationContext struct {
 
 func NewGenericApplicationContext(configurableContextAdapter ConfigurableContextAdapter) *GenericApplicationContext {
 	if configurableContextAdapter == nil {
-		core.Log.Fatal("Configurable Context Adapter must not be null")
+		panic("Configurable Context Adapter must not be null")
 	}
 	return &GenericApplicationContext{
 		mu:                         sync.RWMutex{},
@@ -107,7 +107,8 @@ func (ctx *GenericApplicationContext) GetApplicationListeners() []ApplicationLis
 }
 
 func (ctx *GenericApplicationContext) PublishEvent(event ApplicationEvent) {
-	ctx.applicationEventBroadcaster.BroadcastEvent(event)
+	_ = ctx.applicationEventBroadcaster.BroadcastEvent(event)
+
 }
 
 func (ctx *GenericApplicationContext) Configure() {

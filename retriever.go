@@ -1,16 +1,17 @@
 package context
 
 import (
+	"errors"
 	core "github.com/procyon-projects/procyon-core"
 	peas "github.com/procyon-projects/procyon-peas"
 )
 
 type ApplicationEventListenerRetriever interface {
 	GetApplicationListeners() []ApplicationListener
-	AddApplicationListener(listener ApplicationListener)
-	AddApplicationListenerByPeaName(peaName string)
-	RemoveApplicationListener(listener ApplicationListener)
-	RemoveApplicationListenerByPeaName(peaName string)
+	AddApplicationListener(listener ApplicationListener) error
+	AddApplicationListenerByPeaName(peaName string) error
+	RemoveApplicationListener(listener ApplicationListener) error
+	RemoveApplicationListenerByPeaName(peaName string) error
 	RemoveAllApplicationListeners()
 }
 
@@ -29,7 +30,7 @@ func NewDefaultApplicationEventListenerRetriever() DefaultApplicationEventListen
 
 func NewDefaultApplicationEventListenerRetrieverWithFactory(factory peas.ConfigurablePeaFactory) DefaultApplicationEventListenerRetriever {
 	if factory == nil {
-		core.Log.Fatal("Pea Factory must not be null")
+		panic("Pea Factory must not be null")
 	}
 	return DefaultApplicationEventListenerRetriever{
 		appEventListeners:    make(map[string]ApplicationListener, 0),
@@ -56,20 +57,22 @@ func (retriever DefaultApplicationEventListenerRetriever) GetApplicationListener
 	return listeners
 }
 
-func (retriever DefaultApplicationEventListenerRetriever) AddApplicationListener(listener ApplicationListener) {
+func (retriever DefaultApplicationEventListenerRetriever) AddApplicationListener(listener ApplicationListener) error {
 	typ := core.GetType(listener)
 	if core.IsStruct(typ) {
 		retriever.appEventListeners[typ.String()] = listener
 	} else {
-		core.Log.Error("It must be struct")
+		return errors.New("it must be struct")
 	}
+	return nil
 }
 
-func (retriever DefaultApplicationEventListenerRetriever) AddApplicationListenerByPeaName(peaName string) {
+func (retriever DefaultApplicationEventListenerRetriever) AddApplicationListenerByPeaName(peaName string) error {
 	retriever.appEventListeners[peaName] = nil
+	return nil
 }
 
-func (retriever DefaultApplicationEventListenerRetriever) RemoveApplicationListener(listener ApplicationListener) {
+func (retriever DefaultApplicationEventListenerRetriever) RemoveApplicationListener(listener ApplicationListener) error {
 	typ := core.GetType(listener)
 	if core.IsStruct(typ) {
 		_, ok := retriever.appEventListeners[typ.String()]
@@ -77,15 +80,17 @@ func (retriever DefaultApplicationEventListenerRetriever) RemoveApplicationListe
 			delete(retriever.appEventListeners, typ.String())
 		}
 	} else {
-		core.Log.Error("It must be struct")
+		return errors.New("it must be struct")
 	}
+	return nil
 }
 
-func (retriever DefaultApplicationEventListenerRetriever) RemoveApplicationListenerByPeaName(peaName string) {
+func (retriever DefaultApplicationEventListenerRetriever) RemoveApplicationListenerByPeaName(peaName string) error {
 	_, ok := retriever.appEventListenerPeas[peaName]
 	if ok {
 		delete(retriever.appEventListenerPeas, peaName)
 	}
+	return nil
 }
 
 func (retriever DefaultApplicationEventListenerRetriever) RemoveAllApplicationListeners() {
