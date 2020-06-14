@@ -52,20 +52,23 @@ func (binder ConfigurationPropertiesBinder) bindTargetFields(prefix string, targ
 		field := core.GetFieldValueByIndex(targetTyp, index)
 		fieldType := &core.Type{Val: field}
 		if jsonTagValue != "" {
-			binder.bindTargetField(fieldType, binder.getFullPropertyName(prefix, jsonTagValue), defaultValue)
+			return binder.bindTargetField(fieldType, binder.getFullPropertyName(prefix, jsonTagValue), defaultValue)
 		} else if yamlTagValue != "" {
-			binder.bindTargetField(fieldType, binder.getFullPropertyName(prefix, yamlTagValue), defaultValue)
+			return binder.bindTargetField(fieldType, binder.getFullPropertyName(prefix, yamlTagValue), defaultValue)
 		}
 	}
 	return nil
 }
 
-func (binder ConfigurationPropertiesBinder) bindTargetField(fieldType *core.Type, propertyName string, defaultValue string) {
+func (binder ConfigurationPropertiesBinder) bindTargetField(fieldType *core.Type, propertyName string, defaultValue string) error {
 	propertyValue := binder.env.GetProperty(propertyName, defaultValue)
 	if propertyValue != nil {
 		if fieldType.Val.IsValid() && fieldType.Val.CanSet() {
 			if binder.typeConverterService.CanConvert(core.GetType(propertyValue), fieldType) {
-				value := binder.typeConverterService.Convert(propertyValue, core.GetType(propertyValue), fieldType)
+				value, err := binder.typeConverterService.Convert(propertyValue, core.GetType(propertyValue), fieldType)
+				if err != nil {
+					return err
+				}
 				fieldType.Val.Set(reflect.ValueOf(value))
 			}
 		}
