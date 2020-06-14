@@ -73,6 +73,7 @@ func (binder ConfigurationPropertiesBinder) bindTargetField(fieldType *core.Type
 			}
 		}
 	}
+	return nil
 }
 
 func (binder ConfigurationPropertiesBinder) getFullPropertyName(prefix string, tagValue string) string {
