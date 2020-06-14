@@ -163,8 +163,8 @@ func (ctx *GenericApplicationContext) ContainsPea(name string) (interface{}, err
 	return nil, nil
 }
 
-func (ctx *GenericApplicationContext) RegisterSharedPea(peaName string, sharedObject interface{}) {
-
+func (ctx *GenericApplicationContext) RegisterSharedPea(peaName string, sharedObject interface{}) error {
+	return nil
 }
 
 func (ctx *GenericApplicationContext) GetSharedPea(peaName string) interface{} {
