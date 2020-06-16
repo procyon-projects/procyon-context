@@ -48,11 +48,13 @@ type GenericApplicationContext struct {
 	applicationListeners        []ApplicationListener
 }
 
-func NewGenericApplicationContext(configurableContextAdapter ConfigurableContextAdapter) *GenericApplicationContext {
+func NewGenericApplicationContext(appId uuid.UUID, contextId uuid.UUID, configurableContextAdapter ConfigurableContextAdapter) *GenericApplicationContext {
 	if configurableContextAdapter == nil {
 		panic("Configurable Context Adapter must not be null")
 	}
 	return &GenericApplicationContext{
+		appId:                      appId,
+		contextId:                  contextId,
 		mu:                         sync.RWMutex{},
 		ConfigurableContextAdapter: configurableContextAdapter,
 		peaFactory:                 peas.NewDefaultPeaFactory(),
