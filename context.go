@@ -214,5 +214,5 @@ func (ctx *GenericApplicationContext) SetParentPeaFactory(parent peas.PeaFactory
 }
 
 func (ctx *GenericApplicationContext) Clone() peas.PeaFactory {
-
+	return nil
 }
