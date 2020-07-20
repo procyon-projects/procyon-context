@@ -57,7 +57,7 @@ func NewGenericApplicationContext(appId uuid.UUID, contextId uuid.UUID, configur
 		contextId:                  contextId,
 		mu:                         sync.RWMutex{},
 		ConfigurableContextAdapter: configurableContextAdapter,
-		peaFactory:                 peas.NewDefaultPeaFactory(),
+		peaFactory:                 peas.NewDefaultPeaFactory(nil),
 	}
 }
 
