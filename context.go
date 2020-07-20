@@ -184,3 +184,35 @@ func (ctx *GenericApplicationContext) GetSharedPeaNames() []string {
 func (ctx *GenericApplicationContext) GetSharedPeaCount() int {
 	return 0
 }
+
+func (ctx *GenericApplicationContext) AddPeaProcessor(processor peas.PeaProcessor) error {
+	return nil
+}
+
+func (ctx *GenericApplicationContext) GetPeaProcessors() []peas.PeaProcessor {
+	return nil
+}
+
+func (ctx *GenericApplicationContext) GetPeaProcessorsCount() int {
+	return 0
+}
+
+func (ctx *GenericApplicationContext) RegisterScope(scopeName string, scope peas.PeaScope) error {
+	return nil
+}
+
+func (ctx *GenericApplicationContext) GetRegisteredScopes() []string {
+	return nil
+}
+
+func (ctx *GenericApplicationContext) GetRegisteredScope(scopeName string) peas.PeaScope {
+	return nil
+}
+
+func (ctx *GenericApplicationContext) SetParentPeaFactory(parent peas.PeaFactory) {
+
+}
+
+func (ctx *GenericApplicationContext) Clone() peas.PeaFactory {
+
+}
