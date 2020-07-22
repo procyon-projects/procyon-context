@@ -220,10 +220,15 @@ func (ctx *GenericApplicationContext) ClonePeaFactory() peas.PeaFactory {
 
 func (ctx *GenericApplicationContext) CloneContext(contextId uuid.UUID, factory peas.ConfigurablePeaFactory) ConfigurableContext {
 	return &GenericApplicationContext{
-		appId:                      ctx.appId,
-		contextId:                  contextId,
-		mu:                         ctx.mu,
-		ConfigurableContextAdapter: ctx.ConfigurableContextAdapter,
-		peaFactory:                 factory,
+		appId:                       ctx.appId,
+		contextId:                   contextId,
+		name:                        ctx.name,
+		startupTimestamp:            ctx.startupTimestamp,
+		mu:                          ctx.mu,
+		ConfigurableContextAdapter:  ctx.ConfigurableContextAdapter,
+		peaFactory:                  factory,
+		environment:                 ctx.environment,
+		applicationListeners:        ctx.applicationListeners,
+		applicationEventBroadcaster: ctx.applicationEventBroadcaster,
 	}
 }
