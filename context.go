@@ -13,6 +13,7 @@ type ApplicationContext interface {
 	GetContextId() uuid.UUID
 	GetApplicationName() string
 	GetStartupTimestamp() int64
+	CloneContext(contextId uuid.UUID, factory peas.ConfigurablePeaFactory) ApplicationContext
 }
 
 type ConfigurableContext interface {
@@ -215,4 +216,14 @@ func (ctx *GenericApplicationContext) SetParentPeaFactory(parent peas.PeaFactory
 
 func (ctx *GenericApplicationContext) Clone() peas.PeaFactory {
 	return nil
+}
+
+func (ctx *GenericApplicationContext) CloneContext(contextId uuid.UUID, factory peas.ConfigurablePeaFactory) ApplicationContext {
+	return &GenericApplicationContext{
+		appId:                      ctx.appId,
+		contextId:                  contextId,
+		mu:                         ctx.mu,
+		ConfigurableContextAdapter: ctx.ConfigurableContextAdapter,
+		peaFactory:                 factory,
+	}
 }
