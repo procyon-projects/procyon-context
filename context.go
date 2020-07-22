@@ -22,6 +22,7 @@ type ConfigurableContext interface {
 	GetEnvironment() core.ConfigurableEnvironment
 	GetPeaFactory() peas.ConfigurablePeaFactory
 	AddApplicationListener(listener ApplicationListener)
+	CloneContext(contextId uuid.UUID, factory peas.ConfigurablePeaFactory) ConfigurableContext
 }
 
 type ConfigurableContextAdapter interface {
@@ -32,7 +33,6 @@ type ConfigurableContextAdapter interface {
 type ConfigurableApplicationContext interface {
 	ApplicationContext
 	ConfigurableContext
-	CloneContext(contextId uuid.UUID, factory peas.ConfigurablePeaFactory) ConfigurableApplicationContext
 }
 
 type GenericApplicationContext struct {
@@ -218,7 +218,7 @@ func (ctx *GenericApplicationContext) ClonePeaFactory() peas.PeaFactory {
 	return nil
 }
 
-func (ctx *GenericApplicationContext) CloneContext(contextId uuid.UUID, factory peas.ConfigurablePeaFactory) ConfigurableApplicationContext {
+func (ctx *GenericApplicationContext) CloneContext(contextId uuid.UUID, factory peas.ConfigurablePeaFactory) ConfigurableContext {
 	return &GenericApplicationContext{
 		appId:                      ctx.appId,
 		contextId:                  contextId,
