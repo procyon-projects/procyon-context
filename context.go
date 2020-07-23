@@ -218,6 +218,10 @@ func (ctx *GenericApplicationContext) ClonePeaFactory() peas.PeaFactory {
 	return nil
 }
 
+func (ctx *GenericApplicationContext) RegisterTypeToScope(typ *core.Type, scope peas.PeaScope) error {
+	return nil
+}
+
 func (ctx *GenericApplicationContext) CloneContext(contextId uuid.UUID, factory peas.ConfigurablePeaFactory) ConfigurableContext {
 	return &GenericApplicationContext{
 		appId:                       ctx.appId,
