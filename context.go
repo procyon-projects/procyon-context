@@ -7,6 +7,16 @@ import (
 	"sync"
 )
 
+var (
+	baseApplicationContextPool sync.Pool
+)
+
+func initBaseApplicationContextPool() {
+	baseApplicationContextPool = sync.Pool{
+		New: newBaseApplicationContext,
+	}
+}
+
 type ApplicationContext interface {
 	peas.ConfigurablePeaFactory
 	GetAppId() uuid.UUID
@@ -25,17 +35,17 @@ type ConfigurableContext interface {
 	CloneContext(contextId uuid.UUID, factory peas.ConfigurablePeaFactory) ConfigurableContext
 }
 
-type ConfigurableContextAdapter interface {
-	Configure()
-	OnConfigure()
-}
-
 type ConfigurableApplicationContext interface {
 	ApplicationContext
 	ConfigurableContext
 }
 
-type GenericApplicationContext struct {
+type ConfigurableContextAdapter interface {
+	Configure()
+	OnConfigure()
+}
+
+type BaseApplicationContext struct {
 	ConfigurableContextAdapter
 	appId                       uuid.UUID
 	contextId                   uuid.UUID
@@ -49,11 +59,15 @@ type GenericApplicationContext struct {
 	applicationListeners        []ApplicationListener
 }
 
-func NewGenericApplicationContext(appId uuid.UUID, contextId uuid.UUID, configurableContextAdapter ConfigurableContextAdapter) *GenericApplicationContext {
+func newBaseApplicationContext() interface{} {
+	return &BaseApplicationContext{}
+}
+
+func NewBaseApplicationContext(appId uuid.UUID, contextId uuid.UUID, configurableContextAdapter ConfigurableContextAdapter) *BaseApplicationContext {
 	if configurableContextAdapter == nil {
 		panic("Configurable Context Adapter must not be null")
 	}
-	return &GenericApplicationContext{
+	return &BaseApplicationContext{
 		appId:                      appId,
 		contextId:                  contextId,
 		mu:                         sync.RWMutex{},
@@ -62,59 +76,59 @@ func NewGenericApplicationContext(appId uuid.UUID, contextId uuid.UUID, configur
 	}
 }
 
-func (ctx *GenericApplicationContext) SetApplicationName(name string) {
+func (ctx *BaseApplicationContext) SetApplicationName(name string) {
 	ctx.name = name
 }
 
-func (ctx *GenericApplicationContext) GetApplicationName() string {
+func (ctx *BaseApplicationContext) GetApplicationName() string {
 	return ctx.name
 }
 
-func (ctx *GenericApplicationContext) GetAppId() uuid.UUID {
+func (ctx *BaseApplicationContext) GetAppId() uuid.UUID {
 	return ctx.appId
 }
 
-func (ctx *GenericApplicationContext) GetContextId() uuid.UUID {
+func (ctx *BaseApplicationContext) GetContextId() uuid.UUID {
 	return ctx.contextId
 }
 
-func (ctx *GenericApplicationContext) GetStartupTimestamp() int64 {
+func (ctx *BaseApplicationContext) GetStartupTimestamp() int64 {
 	return ctx.startupTimestamp
 }
 
-func (ctx *GenericApplicationContext) SetEnvironment(environment core.ConfigurableEnvironment) {
+func (ctx *BaseApplicationContext) SetEnvironment(environment core.ConfigurableEnvironment) {
 	ctx.environment = environment
 }
 
-func (ctx *GenericApplicationContext) GetEnvironment() core.ConfigurableEnvironment {
+func (ctx *BaseApplicationContext) GetEnvironment() core.ConfigurableEnvironment {
 	return ctx.environment
 }
 
-func (ctx *GenericApplicationContext) SetLogger(logger core.Logger) {
+func (ctx *BaseApplicationContext) SetLogger(logger core.Logger) {
 	ctx.logger = logger
 }
 
-func (ctx *GenericApplicationContext) GetLogger() core.Logger {
+func (ctx *BaseApplicationContext) GetLogger() core.Logger {
 	return ctx.logger
 }
 
-func (ctx *GenericApplicationContext) AddApplicationListener(listener ApplicationListener) {
+func (ctx *BaseApplicationContext) AddApplicationListener(listener ApplicationListener) {
 	if ctx.applicationEventBroadcaster != nil {
 		ctx.applicationEventBroadcaster.RegisterApplicationListener(listener)
 	}
 	ctx.applicationListeners = append(ctx.applicationListeners, listener)
 }
 
-func (ctx *GenericApplicationContext) GetApplicationListeners() []ApplicationListener {
+func (ctx *BaseApplicationContext) GetApplicationListeners() []ApplicationListener {
 	return ctx.applicationListeners
 }
 
-func (ctx *GenericApplicationContext) PublishEvent(event ApplicationEvent) {
+func (ctx *BaseApplicationContext) PublishEvent(event ApplicationEvent) {
 	_ = ctx.applicationEventBroadcaster.BroadcastEvent(event)
 
 }
 
-func (ctx *GenericApplicationContext) Configure() {
+func (ctx *BaseApplicationContext) Configure() {
 	ctx.mu.Lock()
 	/* pea processors */
 	ctx.initPeaProcessors()
@@ -127,112 +141,112 @@ func (ctx *GenericApplicationContext) Configure() {
 	ctx.mu.Unlock()
 }
 
-func (ctx *GenericApplicationContext) initPeaProcessors() {
+func (ctx *BaseApplicationContext) initPeaProcessors() {
 
 }
 
-func (ctx *GenericApplicationContext) initApplicationEventBroadcaster() {
+func (ctx *BaseApplicationContext) initApplicationEventBroadcaster() {
 	ctx.applicationEventBroadcaster = NewSimpleApplicationEventBroadcasterWithFactory(ctx.peaFactory)
 }
 
-func (ctx *GenericApplicationContext) initApplicationEventListeners() {
+func (ctx *BaseApplicationContext) initApplicationEventListeners() {
 	appListeners := ctx.GetApplicationListeners()
 	for _, appListener := range appListeners {
 		ctx.applicationEventBroadcaster.RegisterApplicationListener(appListener)
 	}
 }
 
-func (ctx *GenericApplicationContext) GetPeaFactory() peas.ConfigurablePeaFactory {
+func (ctx *BaseApplicationContext) GetPeaFactory() peas.ConfigurablePeaFactory {
 	return ctx.peaFactory
 }
 
-func (ctx *GenericApplicationContext) GetPea(name string) (interface{}, error) {
+func (ctx *BaseApplicationContext) GetPea(name string) (interface{}, error) {
 	return nil, nil
 }
 
-func (ctx *GenericApplicationContext) GetPeaByNameAndType(name string, typ *core.Type) (interface{}, error) {
+func (ctx *BaseApplicationContext) GetPeaByNameAndType(name string, typ *core.Type) (interface{}, error) {
 	return nil, nil
 }
 
-func (ctx *GenericApplicationContext) GetPeaByNameAndArgs(name string, args ...interface{}) (interface{}, error) {
+func (ctx *BaseApplicationContext) GetPeaByNameAndArgs(name string, args ...interface{}) (interface{}, error) {
 	return nil, nil
 }
 
-func (ctx *GenericApplicationContext) GetPeaByType(typ *core.Type) (interface{}, error) {
+func (ctx *BaseApplicationContext) GetPeaByType(typ *core.Type) (interface{}, error) {
 	return nil, nil
 }
 
-func (ctx *GenericApplicationContext) ContainsPea(name string) (interface{}, error) {
+func (ctx *BaseApplicationContext) ContainsPea(name string) (interface{}, error) {
 	return nil, nil
 }
 
-func (ctx *GenericApplicationContext) RegisterSharedPea(peaName string, sharedObject interface{}) error {
+func (ctx *BaseApplicationContext) RegisterSharedPea(peaName string, sharedObject interface{}) error {
 	return nil
 }
 
-func (ctx *GenericApplicationContext) GetSharedPea(peaName string) interface{} {
+func (ctx *BaseApplicationContext) GetSharedPea(peaName string) interface{} {
 	return nil
 }
 
-func (ctx *GenericApplicationContext) ContainsSharedPea(peaName string) bool {
+func (ctx *BaseApplicationContext) ContainsSharedPea(peaName string) bool {
 	return false
 }
 
-func (ctx *GenericApplicationContext) GetSharedPeaNames() []string {
+func (ctx *BaseApplicationContext) GetSharedPeaNames() []string {
 	return nil
 }
 
-func (ctx *GenericApplicationContext) GetSharedPeaCount() int {
+func (ctx *BaseApplicationContext) GetSharedPeaCount() int {
 	return 0
 }
 
-func (ctx *GenericApplicationContext) AddPeaProcessor(processor peas.PeaProcessor) error {
+func (ctx *BaseApplicationContext) AddPeaProcessor(processor peas.PeaProcessor) error {
 	return nil
 }
 
-func (ctx *GenericApplicationContext) GetPeaProcessors() []peas.PeaProcessor {
+func (ctx *BaseApplicationContext) GetPeaProcessors() []peas.PeaProcessor {
 	return nil
 }
 
-func (ctx *GenericApplicationContext) GetPeaProcessorsCount() int {
+func (ctx *BaseApplicationContext) GetPeaProcessorsCount() int {
 	return 0
 }
 
-func (ctx *GenericApplicationContext) RegisterScope(scopeName string, scope peas.PeaScope) error {
+func (ctx *BaseApplicationContext) RegisterScope(scopeName string, scope peas.PeaScope) error {
 	return nil
 }
 
-func (ctx *GenericApplicationContext) GetRegisteredScopes() []string {
+func (ctx *BaseApplicationContext) GetRegisteredScopes() []string {
 	return nil
 }
 
-func (ctx *GenericApplicationContext) GetRegisteredScope(scopeName string) peas.PeaScope {
+func (ctx *BaseApplicationContext) GetRegisteredScope(scopeName string) peas.PeaScope {
 	return nil
 }
 
-func (ctx *GenericApplicationContext) SetParentPeaFactory(parent peas.PeaFactory) {
+func (ctx *BaseApplicationContext) SetParentPeaFactory(parent peas.PeaFactory) {
 
 }
 
-func (ctx *GenericApplicationContext) ClonePeaFactory() peas.PeaFactory {
+func (ctx *BaseApplicationContext) ClonePeaFactory() peas.PeaFactory {
 	return nil
 }
 
-func (ctx *GenericApplicationContext) RegisterTypeToScope(typ *core.Type, scope peas.PeaScope) error {
+func (ctx *BaseApplicationContext) RegisterTypeToScope(typ *core.Type, scope peas.PeaScope) error {
 	return nil
 }
 
-func (ctx *GenericApplicationContext) CloneContext(contextId uuid.UUID, factory peas.ConfigurablePeaFactory) ConfigurableContext {
-	return &GenericApplicationContext{
-		appId:                       ctx.appId,
-		contextId:                   contextId,
-		name:                        ctx.name,
-		startupTimestamp:            ctx.startupTimestamp,
-		mu:                          ctx.mu,
-		ConfigurableContextAdapter:  ctx.ConfigurableContextAdapter,
-		peaFactory:                  factory,
-		environment:                 ctx.environment,
-		applicationListeners:        ctx.applicationListeners,
-		applicationEventBroadcaster: ctx.applicationEventBroadcaster,
-	}
+func (ctx *BaseApplicationContext) CloneContext(contextId uuid.UUID, factory peas.ConfigurablePeaFactory) ConfigurableContext {
+	cloneContext := baseApplicationContextPool.Get().(*BaseApplicationContext)
+	cloneContext.appId = ctx.appId
+	cloneContext.contextId = contextId
+	cloneContext.name = ctx.name
+	cloneContext.startupTimestamp = ctx.startupTimestamp
+	cloneContext.mu = ctx.mu
+	cloneContext.ConfigurableContextAdapter = ctx.ConfigurableContextAdapter
+	cloneContext.peaFactory = factory
+	cloneContext.environment = ctx.environment
+	cloneContext.applicationListeners = ctx.applicationListeners
+	cloneContext.applicationEventBroadcaster = ctx.applicationEventBroadcaster
+	return cloneContext
 }
