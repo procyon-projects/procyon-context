@@ -250,3 +250,7 @@ func (ctx *BaseApplicationContext) CloneContext(contextId uuid.UUID, factory pea
 	cloneContext.applicationEventBroadcaster = ctx.applicationEventBroadcaster
 	return cloneContext
 }
+
+func (ctx *BaseApplicationContext) PutToPool() {
+	baseApplicationContextPool.Put(ctx)
+}
