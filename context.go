@@ -47,14 +47,14 @@ type ConfigurableContextAdapter interface {
 
 type BaseApplicationContext struct {
 	ConfigurableContextAdapter
-	appId                       uuid.UUID
-	contextId                   uuid.UUID
-	name                        string
-	startupTimestamp            int64
-	logger                      core.Logger
-	environment                 core.ConfigurableEnvironment
-	mu                          sync.RWMutex
-	peaFactory                  peas.ConfigurablePeaFactory
+	appId            uuid.UUID
+	contextId        uuid.UUID
+	name             string
+	startupTimestamp int64
+	logger           core.Logger
+	environment      core.ConfigurableEnvironment
+	mu               sync.RWMutex
+	peas.ConfigurablePeaFactory
 	applicationEventBroadcaster ApplicationEventBroadcaster
 	applicationListeners        []ApplicationListener
 }
@@ -72,7 +72,7 @@ func NewBaseApplicationContext(appId uuid.UUID, contextId uuid.UUID, configurabl
 		contextId:                  contextId,
 		mu:                         sync.RWMutex{},
 		ConfigurableContextAdapter: configurableContextAdapter,
-		peaFactory:                 peas.NewDefaultPeaFactory(nil),
+		ConfigurablePeaFactory:     peas.NewDefaultPeaFactory(nil),
 	}
 }
 
@@ -146,7 +146,7 @@ func (ctx *BaseApplicationContext) initPeaProcessors() {
 }
 
 func (ctx *BaseApplicationContext) initApplicationEventBroadcaster() {
-	ctx.applicationEventBroadcaster = NewSimpleApplicationEventBroadcasterWithFactory(ctx.peaFactory)
+	ctx.applicationEventBroadcaster = NewSimpleApplicationEventBroadcasterWithFactory(ctx.ConfigurablePeaFactory)
 }
 
 func (ctx *BaseApplicationContext) initApplicationEventListeners() {
@@ -157,83 +157,7 @@ func (ctx *BaseApplicationContext) initApplicationEventListeners() {
 }
 
 func (ctx *BaseApplicationContext) GetPeaFactory() peas.ConfigurablePeaFactory {
-	return ctx.peaFactory
-}
-
-func (ctx *BaseApplicationContext) GetPea(name string) (interface{}, error) {
-	return nil, nil
-}
-
-func (ctx *BaseApplicationContext) GetPeaByNameAndType(name string, typ *core.Type) (interface{}, error) {
-	return nil, nil
-}
-
-func (ctx *BaseApplicationContext) GetPeaByNameAndArgs(name string, args ...interface{}) (interface{}, error) {
-	return nil, nil
-}
-
-func (ctx *BaseApplicationContext) GetPeaByType(typ *core.Type) (interface{}, error) {
-	return nil, nil
-}
-
-func (ctx *BaseApplicationContext) ContainsPea(name string) (interface{}, error) {
-	return nil, nil
-}
-
-func (ctx *BaseApplicationContext) RegisterSharedPea(peaName string, sharedObject interface{}) error {
-	return nil
-}
-
-func (ctx *BaseApplicationContext) GetSharedPea(peaName string) interface{} {
-	return nil
-}
-
-func (ctx *BaseApplicationContext) ContainsSharedPea(peaName string) bool {
-	return false
-}
-
-func (ctx *BaseApplicationContext) GetSharedPeaNames() []string {
-	return nil
-}
-
-func (ctx *BaseApplicationContext) GetSharedPeaCount() int {
-	return 0
-}
-
-func (ctx *BaseApplicationContext) AddPeaProcessor(processor peas.PeaProcessor) error {
-	return nil
-}
-
-func (ctx *BaseApplicationContext) GetPeaProcessors() []peas.PeaProcessor {
-	return nil
-}
-
-func (ctx *BaseApplicationContext) GetPeaProcessorsCount() int {
-	return 0
-}
-
-func (ctx *BaseApplicationContext) RegisterScope(scopeName string, scope peas.PeaScope) error {
-	return nil
-}
-
-func (ctx *BaseApplicationContext) GetRegisteredScopes() []string {
-	return nil
-}
-
-func (ctx *BaseApplicationContext) GetRegisteredScope(scopeName string) peas.PeaScope {
-	return nil
-}
-
-func (ctx *BaseApplicationContext) SetParentPeaFactory(parent peas.PeaFactory) {
-
-}
-
-func (ctx *BaseApplicationContext) ClonePeaFactory() peas.PeaFactory {
-	return nil
-}
-
-func (ctx *BaseApplicationContext) RegisterTypeToScope(typ *core.Type, scope peas.PeaScope) error {
-	return nil
+	return ctx.ConfigurablePeaFactory
 }
 
 func (ctx *BaseApplicationContext) CloneContext(contextId uuid.UUID, factory peas.ConfigurablePeaFactory) ConfigurableContext {
@@ -244,7 +168,7 @@ func (ctx *BaseApplicationContext) CloneContext(contextId uuid.UUID, factory pea
 	cloneContext.startupTimestamp = ctx.startupTimestamp
 	cloneContext.mu = ctx.mu
 	cloneContext.ConfigurableContextAdapter = ctx.ConfigurableContextAdapter
-	cloneContext.peaFactory = factory
+	cloneContext.ConfigurablePeaFactory = factory
 	cloneContext.environment = ctx.environment
 	cloneContext.applicationListeners = ctx.applicationListeners
 	cloneContext.applicationEventBroadcaster = ctx.applicationEventBroadcaster
