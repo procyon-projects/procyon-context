@@ -7,16 +7,6 @@ import (
 	"sync"
 )
 
-var (
-	baseApplicationContextPool sync.Pool
-)
-
-func initBaseApplicationContextPool() {
-	baseApplicationContextPool = sync.Pool{
-		New: newBaseApplicationContext,
-	}
-}
-
 type Context interface {
 	GetAppId() uuid.UUID
 	GetContextId() uuid.UUID
@@ -36,7 +26,7 @@ type ConfigurableContext interface {
 	GetEnvironment() core.ConfigurableEnvironment
 	GetPeaFactory() peas.ConfigurablePeaFactory
 	AddApplicationListener(listener ApplicationListener)
-	CloneContext(contextId uuid.UUID, factory peas.ConfigurablePeaFactory) ConfigurableContext
+	Copy(cloneContext ConfigurableContext, contextId uuid.UUID)
 }
 
 type ConfigurableApplicationContext interface {
@@ -57,14 +47,10 @@ type BaseApplicationContext struct {
 	startupTimestamp int64
 	logger           Logger
 	environment      core.ConfigurableEnvironment
-	mu               sync.RWMutex
+	mu               *sync.RWMutex
 	peas.ConfigurablePeaFactory
 	applicationEventBroadcaster ApplicationEventBroadcaster
 	applicationListeners        []ApplicationListener
-}
-
-func newBaseApplicationContext() interface{} {
-	return &BaseApplicationContext{}
 }
 
 func NewBaseApplicationContext(appId uuid.UUID, contextId uuid.UUID, configurableContextAdapter ConfigurableContextAdapter) *BaseApplicationContext {
@@ -74,7 +60,7 @@ func NewBaseApplicationContext(appId uuid.UUID, contextId uuid.UUID, configurabl
 	return &BaseApplicationContext{
 		appId:                      appId,
 		contextId:                  contextId,
-		mu:                         sync.RWMutex{},
+		mu:                         &sync.RWMutex{},
 		ConfigurableContextAdapter: configurableContextAdapter,
 		ConfigurablePeaFactory:     peas.NewDefaultPeaFactory(nil),
 	}
@@ -170,21 +156,16 @@ func (ctx *BaseApplicationContext) GetPeaFactory() peas.ConfigurablePeaFactory {
 	return ctx.ConfigurablePeaFactory
 }
 
-func (ctx *BaseApplicationContext) CloneContext(contextId uuid.UUID, factory peas.ConfigurablePeaFactory) ConfigurableContext {
-	cloneContext := baseApplicationContextPool.Get().(*BaseApplicationContext)
-	cloneContext.appId = ctx.appId
-	cloneContext.contextId = contextId
-	cloneContext.name = ctx.name
-	cloneContext.startupTimestamp = ctx.startupTimestamp
-	cloneContext.mu = ctx.mu
-	cloneContext.ConfigurableContextAdapter = ctx.ConfigurableContextAdapter
-	cloneContext.ConfigurablePeaFactory = factory
-	cloneContext.environment = ctx.environment
-	cloneContext.applicationListeners = ctx.applicationListeners
-	cloneContext.applicationEventBroadcaster = ctx.applicationEventBroadcaster
-	return cloneContext
-}
-
-func (ctx *BaseApplicationContext) PutToPool() {
-	baseApplicationContextPool.Put(ctx)
+func (ctx *BaseApplicationContext) Copy(cloneContext ConfigurableContext, contextId uuid.UUID) {
+	if clone, ok := cloneContext.(*BaseApplicationContext); ok {
+		clone.appId = ctx.appId
+		clone.contextId = contextId
+		clone.name = ctx.name
+		clone.startupTimestamp = ctx.startupTimestamp
+		clone.mu = ctx.mu
+		clone.ConfigurableContextAdapter = ctx.ConfigurableContextAdapter
+		clone.environment = ctx.environment
+		clone.applicationListeners = ctx.applicationListeners
+		clone.applicationEventBroadcaster = ctx.applicationEventBroadcaster
+	}
 }
