@@ -32,6 +32,14 @@ type Logger interface {
 	Error(ctx Context, args ...interface{})
 	Fatal(ctx Context, args ...interface{})
 	Panic(ctx Context, args ...interface{})
+	T(contextId string, args ...interface{})
+	D(contextId string, args ...interface{})
+	I(contextId string, args ...interface{})
+	P(contextId string, args ...interface{})
+	W(contextId string, args ...interface{})
+	E(contextId string, args ...interface{})
+	F(contextId string, args ...interface{})
+	Wtf(contextId string, args ...interface{})
 }
 
 type SimpleLogger struct {
@@ -52,6 +60,12 @@ func NewSimpleLogger() *SimpleLogger {
 func (l *SimpleLogger) checkContext(ctx Context) {
 	if ctx == nil {
 		panic("Context must not be nil")
+	}
+}
+
+func (l *SimpleLogger) checkContextId(contextId string) {
+	if contextId == "" {
+		panic("Context Id must not be empty")
 	}
 }
 
@@ -108,6 +122,62 @@ func (l *SimpleLogger) Panic(ctx Context, args ...interface{}) {
 	l.checkContext(ctx)
 	l.log.WithFields(logrus.Fields{
 		"context_id": ctx.GetContextId(),
+	}).Panic(args...)
+}
+
+func (l *SimpleLogger) T(contextId string, args ...interface{}) {
+	l.checkContextId(contextId)
+	l.log.WithFields(logrus.Fields{
+		"context_id": contextId,
+	}).Trace(args...)
+}
+
+func (l *SimpleLogger) D(contextId string, args ...interface{}) {
+	l.checkContextId(contextId)
+	l.log.WithFields(logrus.Fields{
+		"context_id": contextId,
+	}).Debug(args...)
+}
+
+func (l *SimpleLogger) I(contextId string, args ...interface{}) {
+	l.checkContextId(contextId)
+	l.log.WithFields(logrus.Fields{
+		"context_id": contextId,
+	}).Info(args...)
+}
+
+func (l *SimpleLogger) P(contextId string, args ...interface{}) {
+	l.checkContextId(contextId)
+	l.log.WithFields(logrus.Fields{
+		"context_id": contextId,
+	}).Panic(args...)
+}
+
+func (l *SimpleLogger) W(contextId string, args ...interface{}) {
+	l.checkContextId(contextId)
+	l.log.WithFields(logrus.Fields{
+		"context_id": contextId,
+	}).Warning(args...)
+}
+
+func (l *SimpleLogger) E(contextId string, args ...interface{}) {
+	l.checkContextId(contextId)
+	l.log.WithFields(logrus.Fields{
+		"context_id": contextId,
+	}).Error(args...)
+}
+
+func (l *SimpleLogger) F(contextId string, args ...interface{}) {
+	l.checkContextId(contextId)
+	l.log.WithFields(logrus.Fields{
+		"context_id": contextId,
+	}).Fatal(args...)
+}
+
+func (l *SimpleLogger) Wtf(contextId string, args ...interface{}) {
+	l.checkContextId(contextId)
+	l.log.WithFields(logrus.Fields{
+		"context_id": contextId,
 	}).Panic(args...)
 }
 
