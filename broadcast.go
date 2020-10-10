@@ -13,7 +13,7 @@ type ApplicationEventBroadcaster interface {
 	UnregisterApplicationListener(listener ApplicationListener)
 	UnregisterApplicationListenerByPeaName(peaName string)
 	RemoveAllApplicationListeners()
-	BroadcastEvent(context ApplicationContext, event ApplicationEvent) error
+	BroadcastEvent(context ApplicationContext, event ApplicationEvent)
 }
 
 type BaseApplicationEventBroadcaster struct {
@@ -31,7 +31,7 @@ func NewBaseApplicationEventBroadcaster(logger Logger) *BaseApplicationEventBroa
 	}
 }
 
-func NewBaseApplicationEventBroadcasterWithFactory(factory peas.ConfigurablePeaFactory) *BaseApplicationEventBroadcaster {
+func NewBaseApplicationEventBroadcasterWithFactory(logger Logger, factory peas.ConfigurablePeaFactory) *BaseApplicationEventBroadcaster {
 	if factory == nil {
 		panic("Pea Factory must not be null")
 	}
@@ -39,6 +39,7 @@ func NewBaseApplicationEventBroadcasterWithFactory(factory peas.ConfigurablePeaF
 		peaFactory:             factory,
 		eventListenerRetriever: NewDefaultApplicationEventListenerRetrieverWithFactory(factory),
 		mu:                     sync.RWMutex{},
+		logger:                 logger,
 	}
 }
 
@@ -118,31 +119,26 @@ func NewSimpleApplicationEventBroadcaster(logger Logger) *SimpleApplicationEvent
 	}
 }
 
-func NewSimpleApplicationEventBroadcasterWithFactory(factory peas.ConfigurablePeaFactory) *SimpleApplicationEventBroadcaster {
+func NewSimpleApplicationEventBroadcasterWithFactory(logger Logger, factory peas.ConfigurablePeaFactory) *SimpleApplicationEventBroadcaster {
 	return &SimpleApplicationEventBroadcaster{
-		BaseApplicationEventBroadcaster: NewBaseApplicationEventBroadcasterWithFactory(factory),
+		BaseApplicationEventBroadcaster: NewBaseApplicationEventBroadcasterWithFactory(logger, factory),
 	}
 }
 
-func (broadcaster *SimpleApplicationEventBroadcaster) BroadcastEvent(context ApplicationContext, event ApplicationEvent) (err error) {
+func (broadcaster *SimpleApplicationEventBroadcaster) BroadcastEvent(context ApplicationContext, event ApplicationEvent) {
 	listeners := broadcaster.GetApplicationListeners(context, event)
 	for _, listener := range listeners {
-		err = broadcaster.invokeListener(context, listener, event)
-		if err != nil {
-			break
-		}
+		broadcaster.invokeListener(context, listener, event)
 	}
-	return nil
 }
 
 func (broadcaster *SimpleApplicationEventBroadcaster) invokeListener(context ApplicationContext,
 	listener ApplicationListener,
-	event ApplicationEvent) (err error) {
+	event ApplicationEvent) {
 	defer func() {
 		if r := recover(); r != nil {
 			broadcaster.logger.Fatal(context, fmt.Sprintf("while invoking an application listener, the error occurred : %s", r))
 		}
 	}()
 	listener.OnApplicationEvent(context, event)
-	return nil
 }
