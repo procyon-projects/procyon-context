@@ -17,12 +17,16 @@ func initBaseApplicationContextPool() {
 	}
 }
 
-type ApplicationContext interface {
-	peas.ConfigurablePeaFactory
+type Context interface {
 	GetAppId() uuid.UUID
 	GetContextId() uuid.UUID
 	GetApplicationName() string
 	GetStartupTimestamp() int64
+}
+
+type ApplicationContext interface {
+	Context
+	peas.ConfigurablePeaFactory
 }
 
 type ConfigurableContext interface {
@@ -130,6 +134,7 @@ func (ctx *BaseApplicationContext) PublishEvent(event ApplicationEvent) {
 
 func (ctx *BaseApplicationContext) Configure() {
 	ctx.mu.Lock()
+	ctx.preparePeaFactory()
 	/* pea processors */
 	ctx.initPeaProcessors()
 	/* application event broadcaster */
@@ -139,6 +144,11 @@ func (ctx *BaseApplicationContext) Configure() {
 	/* application event listeners */
 	ctx.initApplicationEventListeners()
 	ctx.mu.Unlock()
+}
+
+func (ctx *BaseApplicationContext) preparePeaFactory() {
+	peaFactory := ctx.GetPeaFactory()
+	_ = peaFactory.RegisterSharedPea("environment", ctx.GetEnvironment())
 }
 
 func (ctx *BaseApplicationContext) initPeaProcessors() {
