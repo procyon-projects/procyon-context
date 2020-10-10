@@ -95,6 +95,9 @@ func (ctx *BaseApplicationContext) GetEnvironment() core.ConfigurableEnvironment
 }
 
 func (ctx *BaseApplicationContext) SetLogger(logger Logger) {
+	if ctx.logger != nil {
+		panic("There is already a logger, you cannot change it")
+	}
 	ctx.logger = logger
 }
 
@@ -114,7 +117,7 @@ func (ctx *BaseApplicationContext) GetApplicationListeners() []ApplicationListen
 }
 
 func (ctx *BaseApplicationContext) PublishEvent(event ApplicationEvent) {
-	_ = ctx.applicationEventBroadcaster.BroadcastEvent(ctx, event)
+	ctx.applicationEventBroadcaster.BroadcastEvent(ctx, event)
 }
 
 func (ctx *BaseApplicationContext) Configure() {
@@ -141,7 +144,7 @@ func (ctx *BaseApplicationContext) initPeaProcessors() {
 }
 
 func (ctx *BaseApplicationContext) initApplicationEventBroadcaster() {
-	ctx.applicationEventBroadcaster = NewSimpleApplicationEventBroadcasterWithFactory(ctx.ConfigurablePeaFactory)
+	ctx.applicationEventBroadcaster = NewSimpleApplicationEventBroadcasterWithFactory(ctx.logger, ctx.ConfigurablePeaFactory)
 }
 
 func (ctx *BaseApplicationContext) initApplicationEventListeners() {
