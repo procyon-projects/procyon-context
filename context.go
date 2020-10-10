@@ -2,7 +2,7 @@ package context
 
 import (
 	"github.com/google/uuid"
-	"github.com/procyon-projects/procyon-core"
+	core "github.com/procyon-projects/procyon-core"
 	"github.com/procyon-projects/procyon-peas"
 	"sync"
 )
@@ -30,8 +30,8 @@ type ApplicationContext interface {
 }
 
 type ConfigurableContext interface {
-	SetLogger(logger core.Logger)
-	GetLogger() core.Logger
+	SetLogger(logger Logger)
+	GetLogger() Logger
 	SetEnvironment(environment core.ConfigurableEnvironment)
 	GetEnvironment() core.ConfigurableEnvironment
 	GetPeaFactory() peas.ConfigurablePeaFactory
@@ -55,7 +55,7 @@ type BaseApplicationContext struct {
 	contextId        uuid.UUID
 	name             string
 	startupTimestamp int64
-	logger           core.Logger
+	logger           Logger
 	environment      core.ConfigurableEnvironment
 	mu               sync.RWMutex
 	peas.ConfigurablePeaFactory
@@ -108,11 +108,11 @@ func (ctx *BaseApplicationContext) GetEnvironment() core.ConfigurableEnvironment
 	return ctx.environment
 }
 
-func (ctx *BaseApplicationContext) SetLogger(logger core.Logger) {
+func (ctx *BaseApplicationContext) SetLogger(logger Logger) {
 	ctx.logger = logger
 }
 
-func (ctx *BaseApplicationContext) GetLogger() core.Logger {
+func (ctx *BaseApplicationContext) GetLogger() Logger {
 	return ctx.logger
 }
 
