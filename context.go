@@ -114,8 +114,7 @@ func (ctx *BaseApplicationContext) GetApplicationListeners() []ApplicationListen
 }
 
 func (ctx *BaseApplicationContext) PublishEvent(event ApplicationEvent) {
-	_ = ctx.applicationEventBroadcaster.BroadcastEvent(event)
-
+	_ = ctx.applicationEventBroadcaster.BroadcastEvent(ctx, event)
 }
 
 func (ctx *BaseApplicationContext) Configure() {

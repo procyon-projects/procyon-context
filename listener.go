@@ -1,6 +1,6 @@
 package context
 
 type ApplicationListener interface {
-	SubscribeEvents() []ApplicationEvent
-	OnApplicationEvent(event ApplicationEvent)
+	SubscribeEvents(context ApplicationContext) []ApplicationEvent
+	OnApplicationEvent(context ApplicationContext, event ApplicationEvent)
 }
