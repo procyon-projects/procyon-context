@@ -1,6 +1,11 @@
 package context
 
-import core "github.com/procyon-projects/procyon-core"
+import (
+	core "github.com/procyon-projects/procyon-core"
+	peas "github.com/procyon-projects/procyon-peas"
+	"log"
+	"strings"
+)
 
 type RepositoryMetadata struct {
 	typ *core.Type
@@ -25,4 +30,66 @@ func NewServiceMetadata() ServiceMetadata {
 
 type Service interface {
 	GetServiceMetadata() ServiceMetadata
+}
+
+type ScannedPeaDefinition struct {
+	peas.SimplePeaDefinition
+	componentName string
+}
+
+func NewScannedPeaDefinition(componentName string, peaType *core.Type) ScannedPeaDefinition {
+	return ScannedPeaDefinition{
+		peas.NewSimplePeaDefinition(peaType.String(), peaType, ""),
+		componentName,
+	}
+}
+
+func (definition ScannedPeaDefinition) GetComponentName() string {
+	return definition.componentName
+}
+
+type ScannedPeaNameGenerator struct {
+}
+
+func NewScannedPeaNameGenerator() ScannedPeaNameGenerator {
+	return ScannedPeaNameGenerator{}
+}
+
+func (generator ScannedPeaNameGenerator) GenerateName(peaDefinition peas.PeaDefinition) string {
+	peaTypeName := peaDefinition.GetName()
+	lastDotIndex := strings.LastIndex(peaTypeName, ".")
+	shortName := ""
+	if lastDotIndex != -1 {
+		shortName = peaTypeName[lastDotIndex+1:]
+	} else {
+		shortName = peaTypeName
+	}
+	shortName = strings.ToLower(peaTypeName[:1]) + peaTypeName[1:]
+	return shortName
+}
+
+type ComponentPeaDefinitionScanner struct {
+	peaNameGenerator peas.PeaNameGenerator
+}
+
+func NewComponentPeaDefinitionScanner() ComponentPeaDefinitionScanner {
+	return ComponentPeaDefinitionScanner{
+		NewScannedPeaNameGenerator(),
+	}
+}
+
+func (scanner ComponentPeaDefinitionScanner) DoScan() {
+	scannedPeaDefinitions := make([]ScannedPeaDefinition, 0)
+	err := core.VisitComponentTypes(func(componentName string, componentType *core.Type) error {
+		scannedPeaDefinition := NewScannedPeaDefinition(componentName, componentType)
+		scannedPeaDefinitions = append(scannedPeaDefinitions, scannedPeaDefinition)
+		return nil
+	})
+	if err != nil {
+		panic(err)
+	}
+	for _, peaDefinition := range scannedPeaDefinitions {
+		peaName := scanner.peaNameGenerator.GenerateName(peaDefinition)
+		log.Print(peaName)
+	}
 }
