@@ -78,23 +78,21 @@ func (broadcaster *BaseApplicationEventBroadcaster) BroadcastEvent(event Applica
 	return nil
 }
 
-func (broadcaster *BaseApplicationEventBroadcaster) GetApplicationListeners(context ApplicationContext, event ApplicationEvent) []ApplicationListener {
+func (broadcaster *BaseApplicationEventBroadcaster) GetApplicationListeners(event ApplicationEvent) []ApplicationListener {
 	broadcaster.mu.Lock()
 	listeners := broadcaster.eventListenerRetriever.GetApplicationListeners()
 	broadcaster.mu.Unlock()
 	supportListeners := make([]ApplicationListener, 0)
 	for _, listener := range listeners {
-		if broadcaster.supportsEvent(context, listener, event) {
+		if broadcaster.supportsEvent(listener, event) {
 			supportListeners = append(supportListeners, listener)
 		}
 	}
 	return supportListeners
 }
 
-func (broadcaster *BaseApplicationEventBroadcaster) supportsEvent(context ApplicationContext,
-	listener ApplicationListener,
-	event ApplicationEvent) bool {
-	subscribedEvents := listener.SubscribeEvents(context)
+func (broadcaster *BaseApplicationEventBroadcaster) supportsEvent(listener ApplicationListener, event ApplicationEvent) bool {
+	subscribedEvents := listener.SubscribeEvents()
 	for _, subscribedEvent := range subscribedEvents {
 		subscribedEventType := core.GetType(subscribedEvent)
 		eventType := core.GetType(event)
@@ -126,7 +124,7 @@ func NewSimpleApplicationEventBroadcasterWithFactory(logger Logger, factory peas
 }
 
 func (broadcaster *SimpleApplicationEventBroadcaster) BroadcastEvent(context ApplicationContext, event ApplicationEvent) {
-	listeners := broadcaster.GetApplicationListeners(context, event)
+	listeners := broadcaster.GetApplicationListeners(event)
 	for _, listener := range listeners {
 		broadcaster.invokeListener(context, listener, event)
 	}
