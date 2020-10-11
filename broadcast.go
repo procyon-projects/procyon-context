@@ -73,9 +73,8 @@ func (broadcaster *BaseApplicationEventBroadcaster) RemoveAllApplicationListener
 	broadcaster.mu.Unlock()
 }
 
-func (broadcaster *BaseApplicationEventBroadcaster) BroadcastEvent(event ApplicationEvent) error {
+func (broadcaster *BaseApplicationEventBroadcaster) BroadcastEvent(context ApplicationContext, event ApplicationEvent) {
 	// do nothing
-	return nil
 }
 
 func (broadcaster *BaseApplicationEventBroadcaster) GetApplicationListeners(event ApplicationEvent) []ApplicationListener {
