@@ -3,7 +3,6 @@ package context
 import (
 	core "github.com/procyon-projects/procyon-core"
 	peas "github.com/procyon-projects/procyon-peas"
-	"log"
 	"strings"
 )
 
@@ -64,17 +63,19 @@ func (generator ScannedPeaNameGenerator) GenerateName(peaDefinition peas.PeaDefi
 	} else {
 		shortName = peaTypeName
 	}
-	shortName = strings.ToLower(peaTypeName[:1]) + peaTypeName[1:]
+	shortName = strings.ToLower(shortName[:1]) + shortName[1:]
 	return shortName
 }
 
 type ComponentPeaDefinitionScanner struct {
 	peaNameGenerator peas.PeaNameGenerator
+	peaRegistry      peas.PeaDefinitionRegistry
 }
 
 func NewComponentPeaDefinitionScanner() ComponentPeaDefinitionScanner {
 	return ComponentPeaDefinitionScanner{
 		NewScannedPeaNameGenerator(),
+		nil,
 	}
 }
 
@@ -90,6 +91,22 @@ func (scanner ComponentPeaDefinitionScanner) DoScan() {
 	}
 	for _, peaDefinition := range scannedPeaDefinitions {
 		peaName := scanner.peaNameGenerator.GenerateName(peaDefinition)
-		log.Print(peaName)
+		if scanner.checkPeaDefinition(peaName, peaDefinition) {
+			peaDefinitionHolder := peas.NewPeaDefinitionHolder(peaName, peaDefinition)
+			scanner.registerPeaDefinition(peaDefinitionHolder)
+		}
 	}
+}
+
+func (scanner ComponentPeaDefinitionScanner) checkPeaDefinition(peaName string, peaDefinition peas.PeaDefinition) bool {
+	if !scanner.peaRegistry.ContainsPeaDefinition(peaName) {
+		return true
+	}
+	return false
+}
+
+func (scanner ComponentPeaDefinitionScanner) registerPeaDefinition(peaDefinitionHolder *peas.PeaDefinitionHolder) {
+	peaName := peaDefinitionHolder.GetPeaName()
+	scanner.peaRegistry.RegisterPeaDefinition(peaName, peaDefinitionHolder.GetPeaDefinition())
+	// register aliases
 }
