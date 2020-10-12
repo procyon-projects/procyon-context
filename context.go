@@ -26,6 +26,7 @@ type ConfigurableContext interface {
 	GetEnvironment() core.ConfigurableEnvironment
 	GetPeaFactory() peas.ConfigurablePeaFactory
 	AddApplicationListener(listener ApplicationListener)
+	AddPeaFactoryProcessor(processor peas.PeaFactoryProcessor)
 	Copy(cloneContext ConfigurableContext, contextId uuid.UUID)
 }
 
@@ -51,6 +52,7 @@ type BaseApplicationContext struct {
 	peas.ConfigurablePeaFactory
 	applicationEventBroadcaster ApplicationEventBroadcaster
 	applicationListeners        []ApplicationListener
+	peaFactoryProcessors        []peas.PeaFactoryProcessor
 }
 
 func NewBaseApplicationContext(appId uuid.UUID, contextId uuid.UUID, configurableContextAdapter ConfigurableContextAdapter) *BaseApplicationContext {
@@ -63,6 +65,8 @@ func NewBaseApplicationContext(appId uuid.UUID, contextId uuid.UUID, configurabl
 		mu:                         &sync.RWMutex{},
 		ConfigurableContextAdapter: configurableContextAdapter,
 		ConfigurablePeaFactory:     peas.NewDefaultPeaFactory(nil),
+		applicationListeners:       make([]ApplicationListener, 0),
+		peaFactoryProcessors:       make([]peas.PeaFactoryProcessor, 0),
 	}
 }
 
@@ -106,10 +110,20 @@ func (ctx *BaseApplicationContext) GetLogger() Logger {
 }
 
 func (ctx *BaseApplicationContext) AddApplicationListener(listener ApplicationListener) {
+	if listener == nil {
+		panic("Listener must not be null")
+	}
 	if ctx.applicationEventBroadcaster != nil {
 		ctx.applicationEventBroadcaster.RegisterApplicationListener(listener)
 	}
 	ctx.applicationListeners = append(ctx.applicationListeners, listener)
+}
+
+func (ctx *BaseApplicationContext) AddPeaFactoryProcessor(processor peas.PeaFactoryProcessor) {
+	if processor == nil {
+		panic("Processor must not be null")
+	}
+	ctx.peaFactoryProcessors = append(ctx.peaFactoryProcessors, processor)
 }
 
 func (ctx *BaseApplicationContext) GetApplicationListeners() []ApplicationListener {
@@ -123,6 +137,7 @@ func (ctx *BaseApplicationContext) PublishEvent(event ApplicationEvent) {
 func (ctx *BaseApplicationContext) Configure() {
 	ctx.mu.Lock()
 	ctx.preparePeaFactory()
+	ctx.invokePeaFactoryPostProcessors()
 	/* pea processors */
 	ctx.initPeaProcessors()
 	/* application event broadcaster */
@@ -137,6 +152,13 @@ func (ctx *BaseApplicationContext) Configure() {
 func (ctx *BaseApplicationContext) preparePeaFactory() {
 	peaFactory := ctx.GetPeaFactory()
 	_ = peaFactory.RegisterSharedPea("environment", ctx.GetEnvironment())
+}
+
+func (ctx *BaseApplicationContext) invokePeaFactoryPostProcessors() {
+	peaFactory := ctx.GetPeaFactory()
+	if _, ok := peaFactory.(peas.PeaDefinitionRegistry); ok {
+
+	}
 }
 
 func (ctx *BaseApplicationContext) initPeaProcessors() {
