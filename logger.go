@@ -24,7 +24,22 @@ const (
 	TraceLevel
 )
 
+type LogType uint32
+
+const (
+	Panic LogType = iota
+	Fatal
+	Error
+	Warn
+	Info
+	Print
+	Debug
+	Trace
+	Wtf
+)
+
 type Logger interface {
+	Log(typ LogType, args ...interface{})
 	Trace(ctx Context, args ...interface{})
 	Debug(ctx Context, args ...interface{})
 	Info(ctx Context, args ...interface{})
@@ -44,16 +59,18 @@ type Logger interface {
 }
 
 type SimpleLogger struct {
-	log *logrus.Logger
+	log       *logrus.Logger
+	contextId string
 }
 
-func NewSimpleLogger() *SimpleLogger {
+func NewSimpleLogger(contextId string) *SimpleLogger {
 	log := &SimpleLogger{
 		&logrus.Logger{
 			Out:       os.Stdout,
 			Formatter: NewLogFormatter(),
 			Level:     logrus.InfoLevel,
 		},
+		contextId,
 	}
 	return log
 }
@@ -67,6 +84,27 @@ func (l *SimpleLogger) checkContext(ctx Context) {
 func (l *SimpleLogger) checkContextId(contextId string) {
 	if contextId == "" {
 		panic("Context Id must not be empty")
+	}
+}
+
+func (l *SimpleLogger) Log(typ LogType, args ...interface{}) {
+	switch typ {
+	case Trace:
+		l.T(l.contextId, args)
+	case Debug:
+		l.D(l.contextId, args)
+	case Info:
+		l.I(l.contextId, args)
+	case Print:
+		l.P(l.contextId, args)
+	case Warn:
+		l.W(l.contextId, args)
+	case Error:
+		l.T(l.contextId, args)
+	case Fatal:
+		l.F(l.contextId, args)
+	case Panic:
+		l.Wtf(l.contextId, args)
 	}
 }
 
