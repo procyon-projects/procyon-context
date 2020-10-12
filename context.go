@@ -154,7 +154,6 @@ func (ctx *BaseApplicationContext) PublishEvent(event ApplicationEvent) {
 func (ctx *BaseApplicationContext) Configure() {
 	ctx.mu.Lock()
 	ctx.preparePeaFactory()
-	ctx.invokePeaFactoryPostProcessors()
 	/* pea processors */
 	ctx.initPeaProcessors()
 	/* application event broadcaster */
@@ -171,15 +170,56 @@ func (ctx *BaseApplicationContext) preparePeaFactory() {
 	_ = peaFactory.RegisterSharedPea("environment", ctx.GetEnvironment())
 }
 
-func (ctx *BaseApplicationContext) invokePeaFactoryPostProcessors() {
+func (ctx *BaseApplicationContext) initPeaProcessors() {
 	peaFactory := ctx.GetPeaFactory()
-	if _, ok := peaFactory.(peas.PeaDefinitionRegistry); ok {
-
+	if peaDefinitionRegistry, ok := peaFactory.(peas.PeaDefinitionRegistry); ok {
+		ctx.invokePeaDefinitionRegistryProcessors(ctx.getPeaDefinitionRegistryProcessors(peaDefinitionRegistry), peaDefinitionRegistry)
+		ctx.invokePeaFactoryProcessors(ctx.getPeaFactoryProcessors(peaDefinitionRegistry), peaFactory)
 	}
 }
 
-func (ctx *BaseApplicationContext) initPeaProcessors() {
+func (ctx *BaseApplicationContext) getPeaDefinitionRegistryProcessors(peaDefinitionRegistry peas.PeaDefinitionRegistry) []peas.PeaDefinitionRegistryProcessor {
+	processors := make([]peas.PeaDefinitionRegistryProcessor, 0)
+	peaFactory := ctx.GetPeaFactory()
+	processorType := core.GetType((*peas.PeaDefinitionRegistryProcessor)(nil))
+	processorNames := peaDefinitionRegistry.GetPeaNamesForType(processorType)
+	for _, processorName := range processorNames {
+		instance, err := peaFactory.GetPeaByNameAndType(processorName, processorType)
+		if err != nil {
+			panic(err)
+		}
+		processors = append(processors, instance.(peas.PeaDefinitionRegistryProcessor))
+	}
+	return processors
+}
 
+func (ctx *BaseApplicationContext) invokePeaDefinitionRegistryProcessors(processors []peas.PeaDefinitionRegistryProcessor,
+	registry peas.PeaDefinitionRegistry) {
+	for _, processor := range processors {
+		processor.AfterPeaDefinitionRegistryInitialization(registry)
+	}
+}
+
+func (ctx *BaseApplicationContext) getPeaFactoryProcessors(peaDefinitionRegistry peas.PeaDefinitionRegistry) []peas.PeaFactoryProcessor {
+	processors := make([]peas.PeaFactoryProcessor, 0)
+	peaFactory := ctx.GetPeaFactory()
+	processorType := core.GetType((*peas.PeaFactoryProcessor)(nil))
+	processorNames := peaDefinitionRegistry.GetPeaNamesForType(processorType)
+	for _, processorName := range processorNames {
+		instance, err := peaFactory.GetPeaByNameAndType(processorName, processorType)
+		if err != nil {
+			panic(err)
+		}
+		processors = append(processors, instance.(peas.PeaFactoryProcessor))
+	}
+	return processors
+}
+
+func (ctx *BaseApplicationContext) invokePeaFactoryProcessors(processors []peas.PeaFactoryProcessor,
+	factory peas.ConfigurablePeaFactory) {
+	for _, processor := range processors {
+		processor.AfterPeaFactoryInitialization(factory)
+	}
 }
 
 func (ctx *BaseApplicationContext) initApplicationEventBroadcaster() {
