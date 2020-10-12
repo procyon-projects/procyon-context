@@ -7,6 +7,9 @@ import (
 	"sync"
 )
 
+const bootstrapProcessor = "github.com.procyon.context.bootstrapProcessor"
+const eventListenerProcessor = "github.com.procyon.context.eventListenerProcessor"
+
 type Context interface {
 	GetAppId() uuid.UUID
 	GetContextId() uuid.UUID
@@ -59,7 +62,7 @@ func NewBaseApplicationContext(appId uuid.UUID, contextId uuid.UUID, configurabl
 	if configurableContextAdapter == nil {
 		panic("Configurable Context Adapter must not be null")
 	}
-	return &BaseApplicationContext{
+	ctx := &BaseApplicationContext{
 		appId:                      appId,
 		contextId:                  contextId,
 		mu:                         &sync.RWMutex{},
@@ -67,6 +70,20 @@ func NewBaseApplicationContext(appId uuid.UUID, contextId uuid.UUID, configurabl
 		ConfigurablePeaFactory:     peas.NewDefaultPeaFactory(nil),
 		applicationListeners:       make([]ApplicationListener, 0),
 		peaFactoryProcessors:       make([]peas.PeaFactoryProcessor, 0),
+	}
+	ctx.initContext()
+	return ctx
+}
+
+func (ctx *BaseApplicationContext) initContext() {
+	peaDefinitionRegistry := ctx.GetPeaFactory().(peas.PeaDefinitionRegistry)
+	if !peaDefinitionRegistry.ContainsPeaDefinition(bootstrapProcessor) {
+		peaDefinition := peas.NewSimplePeaDefinition(bootstrapProcessor, core.GetType((BootstrapProcessor)(nil)), peas.SharedScope)
+		peaDefinitionRegistry.RegisterPeaDefinition(bootstrapProcessor, peaDefinition)
+	}
+	if !peaDefinitionRegistry.ContainsPeaDefinition(eventListenerProcessor) {
+		peaDefinition := peas.NewSimplePeaDefinition(eventListenerProcessor, core.GetType((EventListenerProcessor)(nil)), peas.SharedScope)
+		peaDefinitionRegistry.RegisterPeaDefinition(eventListenerProcessor, peaDefinition)
 	}
 }
 

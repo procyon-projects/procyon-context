@@ -72,10 +72,10 @@ type ComponentPeaDefinitionScanner struct {
 	peaRegistry      peas.PeaDefinitionRegistry
 }
 
-func NewComponentPeaDefinitionScanner() ComponentPeaDefinitionScanner {
+func NewComponentPeaDefinitionScanner(registry peas.PeaDefinitionRegistry) ComponentPeaDefinitionScanner {
 	return ComponentPeaDefinitionScanner{
 		NewScannedPeaNameGenerator(),
-		nil,
+		registry,
 	}
 }
 
