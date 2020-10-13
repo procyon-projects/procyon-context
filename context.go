@@ -212,8 +212,8 @@ func (ctx *BaseApplicationContext) getPeaFactoryProcessors(peaDefinitionRegistry
 		if err != nil {
 			panic(err)
 		}
-		if processors != nil {
-			processors = append(processors, instance.(peas.PeaFactoryProcessor))
+		if instance != nil {
+			instance = append(processors, instance.(peas.PeaFactoryProcessor))
 		}
 	}
 	return processors
