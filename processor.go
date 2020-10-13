@@ -5,6 +5,10 @@ import peas "github.com/procyon-projects/procyon-peas"
 type BootstrapProcessor struct {
 }
 
+func NewBootstrapProcessor() BootstrapProcessor {
+	return BootstrapProcessor{}
+}
+
 func (processor BootstrapProcessor) AfterPeaDefinitionRegistryInitialization(registry peas.PeaDefinitionRegistry) {
 	processor.processPeaDefinitions(registry)
 }
@@ -19,6 +23,10 @@ func (processor BootstrapProcessor) processPeaDefinitions(registry peas.PeaDefin
 }
 
 type EventListenerProcessor struct {
+}
+
+func NewEventListenerProcessor() EventListenerProcessor {
+	return EventListenerProcessor{}
 }
 
 func (processor EventListenerProcessor) AfterPeaDefinitionRegistryInitialization(registry peas.PeaDefinitionRegistry) {
