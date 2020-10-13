@@ -32,13 +32,13 @@ type Service interface {
 }
 
 type ScannedPeaDefinition struct {
-	peas.SimplePeaDefinition
+	*peas.SimplePeaDefinition
 	componentName string
 }
 
 func NewScannedPeaDefinition(componentName string, peaType *core.Type) ScannedPeaDefinition {
 	return ScannedPeaDefinition{
-		peas.NewSimplePeaDefinition(peaType.String(), peaType, ""),
+		peas.NewSimplePeaDefinition(peaType),
 		componentName,
 	}
 }
@@ -55,7 +55,7 @@ func NewScannedPeaNameGenerator() ScannedPeaNameGenerator {
 }
 
 func (generator ScannedPeaNameGenerator) GenerateName(peaDefinition peas.PeaDefinition) string {
-	peaTypeName := peaDefinition.GetName()
+	peaTypeName := peaDefinition.GetTypeName()
 	lastDotIndex := strings.LastIndex(peaTypeName, ".")
 	shortName := ""
 	if lastDotIndex != -1 {

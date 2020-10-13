@@ -78,11 +78,11 @@ func NewBaseApplicationContext(appId uuid.UUID, contextId uuid.UUID, configurabl
 func (ctx *BaseApplicationContext) initContext() {
 	peaDefinitionRegistry := ctx.GetPeaFactory().(peas.PeaDefinitionRegistry)
 	if !peaDefinitionRegistry.ContainsPeaDefinition(bootstrapProcessor) {
-		peaDefinition := peas.NewSimplePeaDefinition(bootstrapProcessor, core.GetType((*BootstrapProcessor)(nil)), peas.SharedScope)
+		peaDefinition := peas.NewSimplePeaDefinition(core.GetType((*BootstrapProcessor)(nil)))
 		peaDefinitionRegistry.RegisterPeaDefinition(bootstrapProcessor, peaDefinition)
 	}
 	if !peaDefinitionRegistry.ContainsPeaDefinition(eventListenerProcessor) {
-		peaDefinition := peas.NewSimplePeaDefinition(eventListenerProcessor, core.GetType((*EventListenerProcessor)(nil)), peas.SharedScope)
+		peaDefinition := peas.NewSimplePeaDefinition(core.GetType((*EventListenerProcessor)(nil)))
 		peaDefinitionRegistry.RegisterPeaDefinition(eventListenerProcessor, peaDefinition)
 	}
 }
