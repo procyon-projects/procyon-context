@@ -82,7 +82,7 @@ func NewComponentPeaDefinitionScanner(registry peas.PeaDefinitionRegistry) Compo
 
 func (scanner ComponentPeaDefinitionScanner) DoScan() {
 	scannedPeaDefinitions := make([]ScannedPeaDefinition, 0)
-	err := core.VisitComponentTypes(func(componentName string, componentType goo.Type) error {
+	err := core.ForEachComponentType(func(componentName string, componentType goo.Type) error {
 		scannedPeaDefinition := NewScannedPeaDefinition(componentName, componentType)
 		scannedPeaDefinitions = append(scannedPeaDefinitions, scannedPeaDefinition)
 		return nil
