@@ -1,20 +1,21 @@
 package context
 
 import (
+	"github.com/codnect/goo"
 	core "github.com/procyon-projects/procyon-core"
 	peas "github.com/procyon-projects/procyon-peas"
 	"strings"
 )
 
 type RepositoryMetadata struct {
-	typ *core.Type
+	typ goo.Type
 }
 
 type Repository interface {
 	GetRepositoryMetadata() RepositoryMetadata
 }
 
-func NewRepositoryMetadata(typ *core.Type) RepositoryMetadata {
+func NewRepositoryMetadata(typ goo.Type) RepositoryMetadata {
 	return RepositoryMetadata{
 		typ,
 	}
@@ -36,7 +37,7 @@ type ScannedPeaDefinition struct {
 	componentName string
 }
 
-func NewScannedPeaDefinition(componentName string, peaType *core.Type) ScannedPeaDefinition {
+func NewScannedPeaDefinition(componentName string, peaType goo.Type) ScannedPeaDefinition {
 	return ScannedPeaDefinition{
 		peas.NewSimplePeaDefinition(peaType),
 		componentName,
@@ -81,7 +82,7 @@ func NewComponentPeaDefinitionScanner(registry peas.PeaDefinitionRegistry) Compo
 
 func (scanner ComponentPeaDefinitionScanner) DoScan() {
 	scannedPeaDefinitions := make([]ScannedPeaDefinition, 0)
-	err := core.VisitComponentTypes(func(componentName string, componentType *core.Type) error {
+	err := core.VisitComponentTypes(func(componentName string, componentType goo.Type) error {
 		scannedPeaDefinition := NewScannedPeaDefinition(componentName, componentType)
 		scannedPeaDefinitions = append(scannedPeaDefinitions, scannedPeaDefinition)
 		return nil

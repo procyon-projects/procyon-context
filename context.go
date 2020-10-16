@@ -1,6 +1,7 @@
 package context
 
 import (
+	"github.com/codnect/goo"
 	"github.com/google/uuid"
 	core "github.com/procyon-projects/procyon-core"
 	"github.com/procyon-projects/procyon-peas"
@@ -78,11 +79,11 @@ func NewBaseApplicationContext(appId uuid.UUID, contextId uuid.UUID, configurabl
 func (ctx *BaseApplicationContext) initContext() {
 	peaDefinitionRegistry := ctx.GetPeaFactory().(peas.PeaDefinitionRegistry)
 	if !peaDefinitionRegistry.ContainsPeaDefinition(bootstrapProcessor) {
-		peaDefinition := peas.NewSimplePeaDefinition(core.GetType(NewBootstrapProcessor))
+		peaDefinition := peas.NewSimplePeaDefinition(goo.GetType(NewBootstrapProcessor))
 		peaDefinitionRegistry.RegisterPeaDefinition(bootstrapProcessor, peaDefinition)
 	}
 	if !peaDefinitionRegistry.ContainsPeaDefinition(eventListenerProcessor) {
-		peaDefinition := peas.NewSimplePeaDefinition(core.GetType(NewEventListenerProcessor))
+		peaDefinition := peas.NewSimplePeaDefinition(goo.GetType(NewEventListenerProcessor))
 		peaDefinitionRegistry.RegisterPeaDefinition(eventListenerProcessor, peaDefinition)
 	}
 }
@@ -181,7 +182,7 @@ func (ctx *BaseApplicationContext) initPeaProcessors() {
 func (ctx *BaseApplicationContext) getPeaDefinitionRegistryProcessors(peaDefinitionRegistry peas.PeaDefinitionRegistry) []peas.PeaDefinitionRegistryProcessor {
 	processors := make([]peas.PeaDefinitionRegistryProcessor, 0)
 	peaFactory := ctx.GetPeaFactory()
-	processorType := core.GetType((*peas.PeaDefinitionRegistryProcessor)(nil))
+	processorType := goo.GetType((*peas.PeaDefinitionRegistryProcessor)(nil))
 	processorNames := peaDefinitionRegistry.GetPeaNamesForType(processorType)
 	for _, processorName := range processorNames {
 		instance, err := peaFactory.GetPeaByNameAndType(processorName, processorType)
@@ -205,7 +206,7 @@ func (ctx *BaseApplicationContext) invokePeaDefinitionRegistryProcessors(process
 func (ctx *BaseApplicationContext) getPeaFactoryProcessors(peaDefinitionRegistry peas.PeaDefinitionRegistry) []peas.PeaFactoryProcessor {
 	processors := make([]peas.PeaFactoryProcessor, 0)
 	peaFactory := ctx.GetPeaFactory()
-	processorType := core.GetType((*peas.PeaFactoryProcessor)(nil))
+	processorType := goo.GetType((*peas.PeaFactoryProcessor)(nil))
 	processorNames := peaDefinitionRegistry.GetPeaNamesForType(processorType)
 	for _, processorName := range processorNames {
 		instance, err := peaFactory.GetPeaByNameAndType(processorName, processorType)

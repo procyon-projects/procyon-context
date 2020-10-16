@@ -2,7 +2,7 @@ package context
 
 import (
 	"errors"
-	core "github.com/procyon-projects/procyon-core"
+	"github.com/codnect/goo"
 	peas "github.com/procyon-projects/procyon-peas"
 )
 
@@ -47,7 +47,7 @@ func (retriever DefaultApplicationEventListenerRetriever) GetApplicationListener
 	if retriever.peaFactory != nil {
 		for peaName := range retriever.appEventListenerPeas {
 			if peaName != "" {
-				peaObj, err := retriever.peaFactory.GetPeaByNameAndType(peaName, core.GetType((*ApplicationListener)(nil)))
+				peaObj, err := retriever.peaFactory.GetPeaByNameAndType(peaName, goo.GetType((*ApplicationListener)(nil)))
 				if err != nil {
 					listeners = append(listeners, peaObj.(ApplicationListener))
 				}
@@ -58,9 +58,9 @@ func (retriever DefaultApplicationEventListenerRetriever) GetApplicationListener
 }
 
 func (retriever DefaultApplicationEventListenerRetriever) AddApplicationListener(listener ApplicationListener) error {
-	typ := core.GetType(listener)
-	if core.IsStruct(typ) {
-		retriever.appEventListeners[typ.String()] = listener
+	typ := goo.GetType(listener)
+	if typ.IsStruct() {
+		retriever.appEventListeners[typ.GetPackageFullName()] = listener
 	} else {
 		return errors.New("it must be struct")
 	}
@@ -73,11 +73,11 @@ func (retriever DefaultApplicationEventListenerRetriever) AddApplicationListener
 }
 
 func (retriever DefaultApplicationEventListenerRetriever) RemoveApplicationListener(listener ApplicationListener) error {
-	typ := core.GetType(listener)
-	if core.IsStruct(typ) {
-		_, ok := retriever.appEventListeners[typ.String()]
+	typ := goo.GetType(listener)
+	if typ.IsStruct() {
+		_, ok := retriever.appEventListeners[typ.GetPackageFullName()]
 		if ok {
-			delete(retriever.appEventListeners, typ.String())
+			delete(retriever.appEventListeners, typ.GetPackageFullName())
 		}
 	} else {
 		return errors.New("it must be struct")

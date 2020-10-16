@@ -2,8 +2,8 @@ package context
 
 import (
 	"errors"
+	"github.com/codnect/goo"
 	core "github.com/procyon-projects/procyon-core"
-	"reflect"
 )
 
 type ConfigurationProperties interface {
@@ -33,7 +33,7 @@ func (binder ConfigurationPropertiesBinder) Bind(target interface{}) error {
 		if prefix == "" {
 			return errors.New("prefix must not be null")
 		}
-		if !core.IsPtr(target) {
+		if !goo.GetType(target).IsPointer() {
 			return errors.New("this object cannot be bound the configuration properties")
 		}
 		return binder.bindTargetFields(prefix, target)
@@ -42,7 +42,7 @@ func (binder ConfigurationPropertiesBinder) Bind(target interface{}) error {
 }
 
 func (binder ConfigurationPropertiesBinder) bindTargetFields(prefix string, target interface{}) error {
-	targetTyp := core.GetType(target)
+	/*targetTyp := core.GetType(target)
 	numField := core.GetNumField(targetTyp)
 	for index := 0; index < numField; index++ {
 		structField := core.GetStructFieldByIndex(targetTyp, index)
@@ -56,23 +56,23 @@ func (binder ConfigurationPropertiesBinder) bindTargetFields(prefix string, targ
 		} else if yamlTagValue != "" {
 			return binder.bindTargetField(fieldType, binder.getFullPropertyName(prefix, yamlTagValue), defaultValue)
 		}
-	}
+	}*/
 	return nil
 }
 
-func (binder ConfigurationPropertiesBinder) bindTargetField(fieldType *core.Type, propertyName string, defaultValue string) error {
-	propertyValue := binder.env.GetProperty(propertyName, defaultValue)
+func (binder ConfigurationPropertiesBinder) bindTargetField(fieldType goo.Type, propertyName string, defaultValue string) error {
+	/*propertyValue := binder.env.GetProperty(propertyName, defaultValue)
 	if propertyValue != nil {
 		if fieldType.Val.IsValid() && fieldType.Val.CanSet() {
-			if binder.typeConverterService.CanConvert(core.GetType(propertyValue), fieldType) {
-				value, err := binder.typeConverterService.Convert(propertyValue, core.GetType(propertyValue), fieldType)
+			if binder.typeConverterService.CanConvert(goo.GetType(propertyValue), fieldType) {
+				value, err := binder.typeConverterService.Convert(propertyValue, goo.GetType(propertyValue), fieldType)
 				if err != nil {
 					return err
 				}
 				fieldType.Val.Set(reflect.ValueOf(value))
 			}
 		}
-	}
+	}*/
 	return nil
 }
 

@@ -2,7 +2,7 @@ package context
 
 import (
 	"fmt"
-	core "github.com/procyon-projects/procyon-core"
+	"github.com/codnect/goo"
 	peas "github.com/procyon-projects/procyon-peas"
 	"sync"
 )
@@ -93,13 +93,13 @@ func (broadcaster *BaseApplicationEventBroadcaster) GetApplicationListeners(even
 func (broadcaster *BaseApplicationEventBroadcaster) supportsEvent(listener ApplicationListener, event ApplicationEvent) bool {
 	subscribedEvents := listener.SubscribeEvents()
 	for _, subscribedEvent := range subscribedEvents {
-		subscribedEventType := core.GetType(subscribedEvent)
-		eventType := core.GetType(event)
-		if core.IsInterface(subscribedEventType) && eventType.Typ.Implements(subscribedEventType.Typ) {
+		subscribedEventType := goo.GetType(subscribedEvent)
+		eventType := goo.GetType(event)
+		if subscribedEventType.IsInterface() && eventType.(goo.Struct).Implements(subscribedEventType.(goo.Struct)) {
 			return true
-		} else if subscribedEventType.Typ == eventType.Typ {
+		} else if subscribedEventType.GetGoType() == eventType.GetGoType() {
 			return true
-		} else if core.IsStruct(subscribedEventType) && core.IsEmbeddedStruct(eventType, subscribedEventType) {
+		} else if subscribedEventType.IsStruct() && eventType.(goo.Struct).Embedded(subscribedEventType.(goo.Struct)) {
 			return true
 		}
 	}
