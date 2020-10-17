@@ -99,7 +99,7 @@ func (broadcaster *BaseApplicationEventBroadcaster) supportsEvent(listener Appli
 			return true
 		} else if subscribedEventType.GetGoType() == eventType.GetGoType() {
 			return true
-		} else if subscribedEventType.IsStruct() && eventType.(goo.Struct).Embedded(subscribedEventType.(goo.Struct)) {
+		} else if subscribedEventType.IsStruct() && eventType.(goo.Struct).EmbeddedStruct(subscribedEventType.(goo.Struct)) {
 			return true
 		}
 	}
