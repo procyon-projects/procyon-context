@@ -163,6 +163,8 @@ func (ctx *BaseApplicationContext) Configure() {
 	ctx.OnConfigure()
 	/* application event listeners */
 	ctx.initApplicationEventListeners()
+	/* finish pea factory initialization */
+	ctx.finishPeaFactoryInitialization()
 	ctx.mu.Unlock()
 }
 
@@ -236,6 +238,10 @@ func (ctx *BaseApplicationContext) initApplicationEventListeners() {
 	for _, appListener := range appListeners {
 		ctx.applicationEventBroadcaster.RegisterApplicationListener(appListener)
 	}
+}
+
+func (ctx *BaseApplicationContext) finishPeaFactoryInitialization() {
+	ctx.GetPeaFactory().PreInstantiateSharedPeas()
 }
 
 func (ctx *BaseApplicationContext) GetPeaFactory() peas.ConfigurablePeaFactory {
