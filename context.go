@@ -154,7 +154,10 @@ func (ctx *BaseApplicationContext) PublishEvent(event ApplicationEvent) {
 
 func (ctx *BaseApplicationContext) Configure() {
 	ctx.mu.Lock()
-	ctx.preparePeaFactory()
+	err := ctx.preparePeaFactory()
+	if err != nil {
+		panic(err)
+	}
 	/* pea processors */
 	ctx.initPeaProcessors()
 	/* application event broadcaster */
@@ -168,9 +171,17 @@ func (ctx *BaseApplicationContext) Configure() {
 	ctx.mu.Unlock()
 }
 
-func (ctx *BaseApplicationContext) preparePeaFactory() {
+func (ctx *BaseApplicationContext) preparePeaFactory() (err error) {
 	peaFactory := ctx.GetPeaFactory()
-	_ = peaFactory.RegisterSharedPea("environment", ctx.GetEnvironment())
+	err = peaFactory.RegisterSharedPea("environment", ctx.GetEnvironment())
+	if err != nil {
+		return err
+	}
+	err = peaFactory.RegisterSharedPea("logger", ctx.GetLogger())
+	if err != nil {
+		return err
+	}
+	return
 }
 
 func (ctx *BaseApplicationContext) initPeaProcessors() {
