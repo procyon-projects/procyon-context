@@ -95,11 +95,11 @@ func (broadcaster *BaseApplicationEventBroadcaster) supportsEvent(listener Appli
 	for _, subscribedEvent := range subscribedEvents {
 		subscribedEventType := goo.GetType(subscribedEvent)
 		eventType := goo.GetType(event)
-		if subscribedEventType.IsInterface() && eventType.(goo.Struct).Implements(subscribedEventType.(goo.Struct)) {
+		if subscribedEventType.IsInterface() && eventType.ToStructType().Implements(subscribedEventType.ToInterfaceType()) {
 			return true
 		} else if subscribedEventType.GetGoType() == eventType.GetGoType() {
 			return true
-		} else if subscribedEventType.IsStruct() && eventType.(goo.Struct).EmbeddedStruct(subscribedEventType.(goo.Struct)) {
+		} else if subscribedEventType.IsStruct() && eventType.ToStructType().EmbeddedStruct(subscribedEventType.ToStructType()) {
 			return true
 		}
 	}
