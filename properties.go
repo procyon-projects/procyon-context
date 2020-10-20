@@ -11,16 +11,14 @@ type ConfigurationProperties interface {
 }
 
 type ConfigurationPropertiesBinder struct {
-	context              ConfigurableApplicationContext
 	env                  core.Environment
 	typeConverterService core.TypeConverterService
 }
 
-func NewConfigurationPropertiesBinder(context ConfigurableApplicationContext) ConfigurationPropertiesBinder {
+func NewConfigurationPropertiesBinder(env core.Environment, typeConverterService core.TypeConverterService) ConfigurationPropertiesBinder {
 	return ConfigurationPropertiesBinder{
-		context,
-		context.GetEnvironment(),
-		context.GetEnvironment().GetTypeConverterService(),
+		env,
+		typeConverterService,
 	}
 }
 
@@ -34,29 +32,33 @@ func (binder ConfigurationPropertiesBinder) Bind(target interface{}) error {
 			return errors.New("prefix must not be null")
 		}
 		if !goo.GetType(target).IsPointer() {
-			return errors.New("this object cannot be bound the configuration properties")
+			return errors.New("configuration properties cannot be bound as it is not a pointer of type")
 		}
 		return binder.bindTargetFields(prefix, target)
 	}
-	return errors.New("it must implement ConfigurationProperties")
+	return nil
 }
 
 func (binder ConfigurationPropertiesBinder) bindTargetFields(prefix string, target interface{}) error {
-	/*targetTyp := core.GetType(target)
-	numField := core.GetNumField(targetTyp)
-	for index := 0; index < numField; index++ {
-		structField := core.GetStructFieldByIndex(targetTyp, index)
-		defaultValue := structField.Tag.Get("default")
-		jsonTagValue := structField.Tag.Get("json")
-		yamlTagValue := structField.Tag.Get("yaml")
-		field := core.GetFieldValueByIndex(targetTyp, index)
-		fieldType := &core.Type{Val: field}
-		if jsonTagValue != "" {
-			return binder.bindTargetField(fieldType, binder.getFullPropertyName(prefix, jsonTagValue), defaultValue)
-		} else if yamlTagValue != "" {
-			return binder.bindTargetField(fieldType, binder.getFullPropertyName(prefix, yamlTagValue), defaultValue)
+	targetTyp := goo.GetType(target).ToStructType()
+	exportedFields := targetTyp.GetExportedFields()
+	for _, field := range exportedFields {
+		var bindTag, defaultTag goo.Tag
+		var err error
+		bindTag, err = field.GetTagByName("json")
+		if err != nil {
+			bindTag, err = field.GetTagByName("yaml")
 		}
-	}*/
+		if err == nil {
+			value := bindTag.Value
+			defaultTag, err = field.GetTagByName("default")
+			if value != "" {
+
+			} else if err == nil && defaultTag.Value != "" {
+
+			}
+		}
+	}
 	return nil
 }
 
