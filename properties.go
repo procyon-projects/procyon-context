@@ -52,29 +52,31 @@ func (binder ConfigurationPropertiesBinder) bindTargetFields(prefix string, targ
 		if err == nil {
 			value := bindTag.Value
 			defaultTag, err = field.GetTagByName("default")
-			if value != "" {
-
+			if err != nil && value != "" {
+				binder.bindTargetField(field, target, binder.getFullPropertyName(prefix, value), "")
 			} else if err == nil && defaultTag.Value != "" {
-
+				binder.bindTargetField(field, target, binder.getFullPropertyName(prefix, value), defaultTag.Value)
 			}
 		}
 	}
 	return nil
 }
 
-func (binder ConfigurationPropertiesBinder) bindTargetField(fieldType goo.Type, propertyName string, defaultValue string) error {
-	/*propertyValue := binder.env.GetProperty(propertyName, defaultValue)
+func (binder ConfigurationPropertiesBinder) bindTargetField(field goo.Field, instance interface{}, propertyName string, defaultValue string) error {
+	propertyValue := binder.env.GetProperty(propertyName, defaultValue)
 	if propertyValue != nil {
-		if fieldType.Val.IsValid() && fieldType.Val.CanSet() {
-			if binder.typeConverterService.CanConvert(goo.GetType(propertyValue), fieldType) {
-				value, err := binder.typeConverterService.Convert(propertyValue, goo.GetType(propertyValue), fieldType)
+		if field.CanSet() {
+			propertyValueType := goo.GetType(propertyValue)
+			fieldType := field.GetType()
+			if binder.typeConverterService.CanConvert(propertyValueType, fieldType) {
+				value, err := binder.typeConverterService.Convert(propertyValue, propertyValueType, fieldType)
 				if err != nil {
 					return err
 				}
-				fieldType.Val.Set(reflect.ValueOf(value))
+				field.SetValue(instance, value)
 			}
 		}
-	}*/
+	}
 	return nil
 }
 
