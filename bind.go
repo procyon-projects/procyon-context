@@ -3,28 +3,31 @@ package context
 import "errors"
 
 type ConfigurationPropertiesBindingProcessor struct {
-	context ApplicationContext
-	binder  ConfigurationPropertiesBinder
+	binder *ConfigurationPropertiesBinder
 }
 
-func NewConfigurationPropertiesBindingProcessor() *ConfigurationPropertiesBindingProcessor {
-	return &ConfigurationPropertiesBindingProcessor{}
+func NewConfigurationPropertiesBindingProcessor(binder *ConfigurationPropertiesBinder) *ConfigurationPropertiesBindingProcessor {
+	return &ConfigurationPropertiesBindingProcessor{
+		binder,
+	}
 }
 
 func (processor *ConfigurationPropertiesBindingProcessor) SetApplicationContext(context ApplicationContext) {
-	processor.context = context
+
 }
 
 func (processor *ConfigurationPropertiesBindingProcessor) AfterProperties() {
-	processor.binder = NewConfigurationPropertiesBinder(processor.context.(ConfigurableApplicationContext))
+
 }
 
 func (processor *ConfigurationPropertiesBindingProcessor) BeforePeaInitialization(peaName string, pea interface{}) (interface{}, error) {
-	err := processor.binder.Bind(pea)
-	if err != nil {
-		return nil, errors.New("error occurred while configuration properties was being binding to pea instance : " + peaName)
+	if processor.binder != nil {
+		err := processor.binder.Bind(pea)
+		if err != nil {
+			return nil, errors.New("error occurred while configuration properties was being binding to pea instance : " + peaName)
+		}
 	}
-	return pea, err
+	return pea, nil
 }
 
 func (processor *ConfigurationPropertiesBindingProcessor) Initialize() error {

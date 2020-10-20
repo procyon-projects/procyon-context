@@ -15,14 +15,14 @@ type ConfigurationPropertiesBinder struct {
 	typeConverterService core.TypeConverterService
 }
 
-func NewConfigurationPropertiesBinder(env core.Environment, typeConverterService core.TypeConverterService) ConfigurationPropertiesBinder {
-	return ConfigurationPropertiesBinder{
+func NewConfigurationPropertiesBinder(env core.Environment, typeConverterService core.TypeConverterService) *ConfigurationPropertiesBinder {
+	return &ConfigurationPropertiesBinder{
 		env,
 		typeConverterService,
 	}
 }
 
-func (binder ConfigurationPropertiesBinder) Bind(target interface{}) error {
+func (binder *ConfigurationPropertiesBinder) Bind(target interface{}) error {
 	if target == nil {
 		return nil
 	}
@@ -39,7 +39,7 @@ func (binder ConfigurationPropertiesBinder) Bind(target interface{}) error {
 	return nil
 }
 
-func (binder ConfigurationPropertiesBinder) bindTargetFields(prefix string, target interface{}) error {
+func (binder *ConfigurationPropertiesBinder) bindTargetFields(prefix string, target interface{}) error {
 	targetTyp := goo.GetType(target).ToStructType()
 	exportedFields := targetTyp.GetExportedFields()
 	for _, field := range exportedFields {
@@ -62,7 +62,7 @@ func (binder ConfigurationPropertiesBinder) bindTargetFields(prefix string, targ
 	return nil
 }
 
-func (binder ConfigurationPropertiesBinder) bindTargetField(fieldType goo.Type, propertyName string, defaultValue string) error {
+func (binder *ConfigurationPropertiesBinder) bindTargetField(fieldType goo.Type, propertyName string, defaultValue string) error {
 	/*propertyValue := binder.env.GetProperty(propertyName, defaultValue)
 	if propertyValue != nil {
 		if fieldType.Val.IsValid() && fieldType.Val.CanSet() {
@@ -78,6 +78,6 @@ func (binder ConfigurationPropertiesBinder) bindTargetField(fieldType goo.Type, 
 	return nil
 }
 
-func (binder ConfigurationPropertiesBinder) getFullPropertyName(prefix string, tagValue string) string {
+func (binder *ConfigurationPropertiesBinder) getFullPropertyName(prefix string, tagValue string) string {
 	return prefix + "." + tagValue
 }
