@@ -30,7 +30,6 @@ type ConfigurableContext interface {
 	GetEnvironment() core.ConfigurableEnvironment
 	GetPeaFactory() peas.ConfigurablePeaFactory
 	AddApplicationListener(listener ApplicationListener)
-	AddPeaFactoryProcessor(processor peas.PeaFactoryProcessor)
 	Copy(cloneContext ConfigurableContext, contextId uuid.UUID)
 }
 
@@ -56,7 +55,6 @@ type BaseApplicationContext struct {
 	peas.ConfigurablePeaFactory
 	applicationEventBroadcaster ApplicationEventBroadcaster
 	applicationListeners        []ApplicationListener
-	peaFactoryProcessors        []peas.PeaFactoryProcessor
 }
 
 func NewBaseApplicationContext(appId uuid.UUID, contextId uuid.UUID, configurableContextAdapter ConfigurableContextAdapter) *BaseApplicationContext {
@@ -70,7 +68,6 @@ func NewBaseApplicationContext(appId uuid.UUID, contextId uuid.UUID, configurabl
 		ConfigurableContextAdapter: configurableContextAdapter,
 		ConfigurablePeaFactory:     peas.NewDefaultPeaFactory(nil),
 		applicationListeners:       make([]ApplicationListener, 0),
-		peaFactoryProcessors:       make([]peas.PeaFactoryProcessor, 0),
 	}
 	ctx.initContext()
 	return ctx
@@ -137,13 +134,6 @@ func (ctx *BaseApplicationContext) AddApplicationListener(listener ApplicationLi
 	ctx.applicationListeners = append(ctx.applicationListeners, listener)
 }
 
-func (ctx *BaseApplicationContext) AddPeaFactoryProcessor(processor peas.PeaFactoryProcessor) {
-	if processor == nil {
-		panic("Processor must not be null")
-	}
-	ctx.peaFactoryProcessors = append(ctx.peaFactoryProcessors, processor)
-}
-
 func (ctx *BaseApplicationContext) GetApplicationListeners() []ApplicationListener {
 	return ctx.applicationListeners
 }
@@ -187,8 +177,12 @@ func (ctx *BaseApplicationContext) preparePeaFactory() (err error) {
 func (ctx *BaseApplicationContext) initPeaProcessors() {
 	peaFactory := ctx.GetPeaFactory()
 	if peaDefinitionRegistry, ok := peaFactory.(peas.PeaDefinitionRegistry); ok {
+		// pea definition registry processor
 		ctx.invokePeaDefinitionRegistryProcessors(ctx.getPeaDefinitionRegistryProcessors(peaDefinitionRegistry), peaDefinitionRegistry)
+		// pea factory processor
 		ctx.invokePeaFactoryProcessors(ctx.getPeaFactoryProcessors(peaDefinitionRegistry), peaFactory)
+		// pea processors
+		ctx.registerPeaProcessors(peaDefinitionRegistry)
 	}
 }
 
@@ -237,6 +231,25 @@ func (ctx *BaseApplicationContext) invokePeaFactoryProcessors(processors []peas.
 	factory peas.ConfigurablePeaFactory) {
 	for _, processor := range processors {
 		processor.AfterPeaFactoryInitialization(factory)
+	}
+}
+
+func (ctx *BaseApplicationContext) registerPeaProcessors(peaDefinitionRegistry peas.PeaDefinitionRegistry) {
+	processors := make([]peas.PeaProcessor, 0)
+	peaFactory := ctx.GetPeaFactory()
+	processorType := goo.GetType((*peas.PeaProcessor)(nil))
+	processorNames := peaDefinitionRegistry.GetPeaNamesForType(processorType)
+	for _, processorName := range processorNames {
+		instance, err := peaFactory.GetPeaByNameAndType(processorName, processorType)
+		if err != nil {
+			panic(err)
+		}
+		if instance != nil {
+			processors = append(processors, instance.(peas.PeaProcessor))
+		}
+	}
+	for _, processor := range processors {
+		ctx.AddPeaProcessor(processor)
 	}
 }
 
