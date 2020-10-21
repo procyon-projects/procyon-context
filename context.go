@@ -171,6 +171,7 @@ func (ctx *BaseApplicationContext) preparePeaFactory() (err error) {
 	if err != nil {
 		return err
 	}
+	peaFactory.RegisterTypeAsOnlyReadable(goo.GetType((*ConfigurationProperties)(nil)))
 	return
 }
 
