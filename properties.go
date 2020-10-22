@@ -68,7 +68,9 @@ func (binder ConfigurationPropertiesBinder) bindTargetField(field goo.Field, ins
 		if field.CanSet() {
 			propertyValueType := goo.GetType(propertyValue)
 			fieldType := field.GetType()
-			if binder.typeConverterService.CanConvert(propertyValueType, fieldType) {
+			if propertyValueType.GetGoType() == fieldType.GetGoType() {
+				field.SetValue(instance, propertyValue)
+			} else if binder.typeConverterService.CanConvert(propertyValueType, fieldType) {
 				value, err := binder.typeConverterService.Convert(propertyValue, propertyValueType, fieldType)
 				if err != nil {
 					return err
