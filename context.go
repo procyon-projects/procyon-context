@@ -41,6 +41,7 @@ type ConfigurableApplicationContext interface {
 type ConfigurableContextAdapter interface {
 	Configure()
 	OnConfigure()
+	FinishConfigure()
 }
 
 type BaseApplicationContext struct {
@@ -158,6 +159,8 @@ func (ctx *BaseApplicationContext) Configure() {
 	ctx.initApplicationEventListeners()
 	/* finish pea factory initialization */
 	ctx.finishPeaFactoryInitialization()
+	/* finish the configure */
+	ctx.FinishConfigure()
 	ctx.mu.Unlock()
 }
 
