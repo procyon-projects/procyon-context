@@ -12,15 +12,15 @@ const bootstrapProcessor = "github.com.procyon.context.bootstrapProcessor"
 const eventListenerProcessor = "github.com.procyon.context.eventListenerProcessor"
 
 type Context interface {
-	GetAppId() uuid.UUID
 	GetContextId() uuid.UUID
-	GetApplicationName() string
-	GetStartupTimestamp() int64
 }
 
 type ApplicationContext interface {
 	Context
 	peas.ConfigurablePeaFactory
+	GetAppId() uuid.UUID
+	GetApplicationName() string
+	GetStartupTimestamp() int64
 }
 
 type ConfigurableContext interface {
