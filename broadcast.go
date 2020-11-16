@@ -1,7 +1,6 @@
 package context
 
 import (
-	"fmt"
 	"sync"
 )
 
@@ -13,16 +12,14 @@ type ApplicationEventBroadcaster interface {
 }
 
 type SimpleApplicationEventBroadcaster struct {
-	logger           Logger
 	eventListenerMap map[ApplicationEventId][]ApplicationListener
 	mu               sync.RWMutex
 }
 
-func NewSimpleApplicationEventBroadcaster(logger Logger) *SimpleApplicationEventBroadcaster {
+func NewSimpleApplicationEventBroadcaster() *SimpleApplicationEventBroadcaster {
 	return &SimpleApplicationEventBroadcaster{
 		mu:               sync.RWMutex{},
 		eventListenerMap: make(map[ApplicationEventId][]ApplicationListener, 0),
-		logger:           logger,
 	}
 }
 
@@ -56,10 +53,5 @@ func (broadcaster *SimpleApplicationEventBroadcaster) BroadcastEvent(context App
 }
 
 func (broadcaster *SimpleApplicationEventBroadcaster) invokeListener(context ApplicationContext, listener ApplicationListener, event ApplicationEvent) {
-	defer func() {
-		if r := recover(); r != nil {
-			broadcaster.logger.Fatal(context, fmt.Sprintf("while invoking an application listener, the error occurred : %s", r))
-		}
-	}()
 	listener.OnApplicationEvent(context, event)
 }
