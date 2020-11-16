@@ -2,7 +2,6 @@ package context
 
 import (
 	"fmt"
-	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"os"
 	"strings"
@@ -247,8 +246,6 @@ func (f *LogFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	contextId := entry.Data["context_id"]
 	if val, ok := contextId.(string); ok {
 		logContextId = val
-	} else if val, ok := contextId.(uuid.UUID); ok {
-		logContextId = val.String()
 	}
 	separatorIndex := strings.Index(logContextId, "-")
 	logContextId = logContextId[:separatorIndex]
