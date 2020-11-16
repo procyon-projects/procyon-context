@@ -258,7 +258,7 @@ func (ctx *BaseApplicationContext) registerPeaProcessors(peaDefinitionRegistry p
 }
 
 func (ctx *BaseApplicationContext) initApplicationEventBroadcaster() {
-	ctx.applicationEventBroadcaster = NewSimpleApplicationEventBroadcasterWithFactory(ctx.logger, ctx.ConfigurablePeaFactory)
+	ctx.applicationEventBroadcaster = NewSimpleApplicationEventBroadcaster()
 }
 
 func (ctx *BaseApplicationContext) initApplicationEventListeners() {
