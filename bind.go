@@ -15,14 +15,6 @@ func NewConfigurationPropertiesBindingProcessor(env core.Environment, typeConver
 	}
 }
 
-func (processor ConfigurationPropertiesBindingProcessor) SetApplicationContext(context ApplicationContext) {
-
-}
-
-func (processor ConfigurationPropertiesBindingProcessor) AfterProperties() {
-
-}
-
 func (processor ConfigurationPropertiesBindingProcessor) BeforePeaInitialization(peaName string, pea interface{}) (interface{}, error) {
 	err := processor.binder.Bind(pea)
 	if err != nil {
@@ -31,7 +23,7 @@ func (processor ConfigurationPropertiesBindingProcessor) BeforePeaInitialization
 	return pea, nil
 }
 
-func (processor ConfigurationPropertiesBindingProcessor) Initialize() error {
+func (processor ConfigurationPropertiesBindingProcessor) InitializePea() error {
 	return nil
 }
 

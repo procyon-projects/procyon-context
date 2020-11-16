@@ -1,5 +1,5 @@
 package context
 
 type ApplicationEventPublisher interface {
-	PublishEvent(event ApplicationEvent)
+	PublishEvent(context Context, event ApplicationEvent)
 }
