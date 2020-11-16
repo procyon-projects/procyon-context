@@ -5,7 +5,6 @@ go 1.13
 require (
 	github.com/codnect/go-one v0.0.0-20200119222923-a2229e1e905b
 	github.com/codnect/goo v1.0.1-beta
-	github.com/google/uuid v1.1.2
 	github.com/konsorten/go-windows-terminal-sequences v1.0.3 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect

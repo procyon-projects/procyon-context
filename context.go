@@ -2,7 +2,6 @@ package context
 
 import (
 	"github.com/codnect/goo"
-	"github.com/google/uuid"
 	core "github.com/procyon-projects/procyon-core"
 	"github.com/procyon-projects/procyon-peas"
 	"sync"
@@ -11,14 +10,17 @@ import (
 const bootstrapProcessor = "github.com.procyon.context.bootstrapProcessor"
 const eventListenerProcessor = "github.com.procyon.context.eventListenerProcessor"
 
+type ApplicationId string
+type ContextId string
+
 type Context interface {
-	GetContextId() uuid.UUID
+	GetContextId() ContextId
 }
 
 type ApplicationContext interface {
 	Context
 	peas.ConfigurablePeaFactory
-	GetAppId() uuid.UUID
+	GetAppId() ApplicationId
 	GetApplicationName() string
 	GetStartupTimestamp() int64
 }
@@ -30,7 +32,7 @@ type ConfigurableContext interface {
 	GetEnvironment() core.ConfigurableEnvironment
 	GetPeaFactory() peas.ConfigurablePeaFactory
 	AddApplicationListener(listener ApplicationListener)
-	Copy(cloneContext ConfigurableContext, contextId uuid.UUID)
+	Copy(cloneContext ConfigurableContext, contextId ContextId)
 }
 
 type ConfigurableApplicationContext interface {
@@ -46,8 +48,8 @@ type ConfigurableContextAdapter interface {
 
 type BaseApplicationContext struct {
 	ConfigurableContextAdapter
-	appId            uuid.UUID
-	contextId        uuid.UUID
+	appId            ApplicationId
+	contextId        ContextId
 	name             string
 	startupTimestamp int64
 	logger           Logger
@@ -58,7 +60,7 @@ type BaseApplicationContext struct {
 	applicationListeners        []ApplicationListener
 }
 
-func NewBaseApplicationContext(appId uuid.UUID, contextId uuid.UUID, configurableContextAdapter ConfigurableContextAdapter) *BaseApplicationContext {
+func NewBaseApplicationContext(appId ApplicationId, contextId ContextId, configurableContextAdapter ConfigurableContextAdapter) *BaseApplicationContext {
 	if configurableContextAdapter == nil {
 		panic("Configurable Context Adapter must not be null")
 	}
@@ -94,11 +96,11 @@ func (ctx *BaseApplicationContext) GetApplicationName() string {
 	return ctx.name
 }
 
-func (ctx *BaseApplicationContext) GetAppId() uuid.UUID {
+func (ctx *BaseApplicationContext) GetAppId() ApplicationId {
 	return ctx.appId
 }
 
-func (ctx *BaseApplicationContext) GetContextId() uuid.UUID {
+func (ctx *BaseApplicationContext) GetContextId() ContextId {
 	return ctx.contextId
 }
 
@@ -276,7 +278,7 @@ func (ctx *BaseApplicationContext) GetPeaFactory() peas.ConfigurablePeaFactory {
 	return ctx.ConfigurablePeaFactory
 }
 
-func (ctx *BaseApplicationContext) Copy(cloneContext ConfigurableContext, contextId uuid.UUID) {
+func (ctx *BaseApplicationContext) Copy(cloneContext ConfigurableContext, contextId ContextId) {
 	if clone, ok := cloneContext.(*BaseApplicationContext); ok {
 		clone.appId = ctx.appId
 		clone.contextId = contextId
