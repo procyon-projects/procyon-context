@@ -109,5 +109,4 @@ func (scanner ComponentPeaDefinitionScanner) checkPeaDefinition(peaName string, 
 func (scanner ComponentPeaDefinitionScanner) registerPeaDefinition(peaDefinitionHolder *peas.PeaDefinitionHolder) {
 	peaName := peaDefinitionHolder.GetPeaName()
 	scanner.peaRegistry.RegisterPeaDefinition(peaName, peaDefinitionHolder.GetPeaDefinition())
-	// register aliases
 }

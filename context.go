@@ -15,6 +15,8 @@ type ContextId string
 
 type Context interface {
 	GetContextId() ContextId
+	Get(key string) interface{}
+	Put(key string, value interface{})
 }
 
 type ApplicationContext interface {
@@ -48,16 +50,17 @@ type ConfigurableContextAdapter interface {
 
 type BaseApplicationContext struct {
 	ConfigurableContextAdapter
-	appId            ApplicationId
-	contextId        ContextId
-	name             string
-	startupTimestamp int64
-	logger           Logger
-	environment      core.ConfigurableEnvironment
-	mu               *sync.RWMutex
 	peas.ConfigurablePeaFactory
+	appId                       ApplicationId
+	contextId                   ContextId
+	name                        string
+	startupTimestamp            int64
+	logger                      Logger
+	environment                 core.ConfigurableEnvironment
+	mu                          *sync.RWMutex
 	applicationEventBroadcaster ApplicationEventBroadcaster
 	applicationListeners        []ApplicationListener
+	bag                         map[string]interface{}
 }
 
 func NewBaseApplicationContext(appId ApplicationId, contextId ContextId, configurableContextAdapter ConfigurableContextAdapter) *BaseApplicationContext {
@@ -71,6 +74,7 @@ func NewBaseApplicationContext(appId ApplicationId, contextId ContextId, configu
 		ConfigurableContextAdapter: configurableContextAdapter,
 		ConfigurablePeaFactory:     peas.NewDefaultPeaFactory(nil),
 		applicationListeners:       make([]ApplicationListener, 0),
+		bag:                        make(map[string]interface{}, 0),
 	}
 	ctx.initContext()
 	return ctx
@@ -102,6 +106,14 @@ func (ctx *BaseApplicationContext) GetAppId() ApplicationId {
 
 func (ctx *BaseApplicationContext) GetContextId() ContextId {
 	return ctx.contextId
+}
+
+func (ctx *BaseApplicationContext) Get(key string) interface{} {
+	return ctx.bag[key]
+}
+
+func (ctx *BaseApplicationContext) Put(key string, value interface{}) {
+	ctx.bag[key] = value
 }
 
 func (ctx *BaseApplicationContext) GetStartupTimestamp() int64 {
