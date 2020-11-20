@@ -129,12 +129,11 @@ func (f *LogFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	}
 
 	var logContextId = ""
-	contextId := entry.Data["context_id"]
-	if val, ok := contextId.(string); ok {
-		logContextId = val
+	contextId := entry.Data["context_id"].(string)
+	if contextId != "" {
+		separatorIndex := strings.Index(contextId, "-")
+		logContextId = logContextId[:separatorIndex]
 	}
-	separatorIndex := strings.Index(logContextId, "-")
-	logContextId = logContextId[:separatorIndex]
 
 	return []byte(
 		fmt.Sprintf("[%s] \x1b[%dm%-7s\x1b[0m %s : %s\n", entry.Time.Format(f.TimestampFormat), levelColor, strings.ToUpper(entry.Level.String()), logContextId, entry.Message)), nil
