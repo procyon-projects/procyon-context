@@ -20,13 +20,20 @@ const (
 )
 
 type Logger interface {
-	Trace(ctx interface{}, args ...interface{})
-	Debug(ctx interface{}, args ...interface{})
-	Info(ctx interface{}, args ...interface{})
-	Warning(ctx interface{}, args ...interface{})
-	Error(ctx interface{}, args ...interface{})
-	Fatal(ctx interface{}, args ...interface{})
-	Panic(ctx interface{}, args ...interface{})
+	Trace(ctx interface{}, message interface{})
+	Debug(ctx interface{}, message interface{})
+	Info(ctx interface{}, message interface{})
+	Warning(ctx interface{}, message interface{})
+	Error(ctx interface{}, message interface{})
+	Fatal(ctx interface{}, message interface{})
+	Panic(ctx interface{}, message interface{})
+	Tracef(ctx interface{}, format string, args ...interface{})
+	Debugf(ctx interface{}, format string, args ...interface{})
+	Infof(ctx interface{}, format string, args ...interface{})
+	Warningf(ctx interface{}, format string, args ...interface{})
+	Errorf(ctx interface{}, format string, args ...interface{})
+	Fatalf(ctx interface{}, format string, args ...interface{})
+	Panicf(ctx interface{}, format string, args ...interface{})
 }
 
 type SimpleLogger struct {
@@ -44,35 +51,63 @@ func NewSimpleLogger() *SimpleLogger {
 	return log
 }
 
-func (l *SimpleLogger) Trace(ctx interface{}, args ...interface{}) {
-	l.logCtx(ctx, TraceLevel, args)
+func (l *SimpleLogger) Trace(ctx interface{}, message interface{}) {
+	l.logCtxMessage(ctx, TraceLevel, message)
 }
 
-func (l *SimpleLogger) Debug(ctx interface{}, args ...interface{}) {
-	l.logCtx(ctx, DebugLevel, args)
+func (l *SimpleLogger) Debug(ctx interface{}, message interface{}) {
+	l.logCtxMessage(ctx, DebugLevel, message)
 }
 
-func (l *SimpleLogger) Info(ctx interface{}, args ...interface{}) {
-	l.logCtx(ctx, InfoLevel, args)
+func (l *SimpleLogger) Info(ctx interface{}, message interface{}) {
+	l.logCtxMessage(ctx, InfoLevel, message)
 }
 
-func (l SimpleLogger) Warning(ctx interface{}, args ...interface{}) {
-	l.logCtx(ctx, WarnLevel, args)
+func (l SimpleLogger) Warning(ctx interface{}, message interface{}) {
+	l.logCtxMessage(ctx, WarnLevel, message)
 }
 
-func (l *SimpleLogger) Error(ctx interface{}, args ...interface{}) {
-	l.logCtx(ctx, ErrorLevel, args)
+func (l *SimpleLogger) Error(ctx interface{}, message interface{}) {
+	l.logCtxMessage(ctx, ErrorLevel, message)
 }
 
-func (l *SimpleLogger) Fatal(ctx interface{}, args ...interface{}) {
-	l.logCtx(ctx, FatalLevel, args)
+func (l *SimpleLogger) Fatal(ctx interface{}, message interface{}) {
+	l.logCtxMessage(ctx, FatalLevel, message)
 }
 
-func (l *SimpleLogger) Panic(ctx interface{}, args ...interface{}) {
-	l.logCtx(ctx, PanicLevel, args)
+func (l *SimpleLogger) Panic(ctx interface{}, message interface{}) {
+	l.logCtxMessage(ctx, PanicLevel, message)
 }
 
-func (l *SimpleLogger) logCtx(ctx interface{}, level LogLevel, args ...interface{}) {
+func (l *SimpleLogger) Tracef(ctx interface{}, format string, args ...interface{}) {
+	l.logCtxMessageFormat(ctx, TraceLevel, format, args...)
+}
+
+func (l *SimpleLogger) Debugf(ctx interface{}, format string, args ...interface{}) {
+	l.logCtxMessageFormat(ctx, DebugLevel, format, args...)
+}
+
+func (l *SimpleLogger) Infof(ctx interface{}, format string, args ...interface{}) {
+	l.logCtxMessageFormat(ctx, InfoLevel, format, args...)
+}
+
+func (l SimpleLogger) Warningf(ctx interface{}, format string, args ...interface{}) {
+	l.logCtxMessageFormat(ctx, WarnLevel, format, args...)
+}
+
+func (l *SimpleLogger) Errorf(ctx interface{}, format string, args ...interface{}) {
+	l.logCtxMessageFormat(ctx, ErrorLevel, format, args...)
+}
+
+func (l *SimpleLogger) Fatalf(ctx interface{}, format string, args ...interface{}) {
+	l.logCtxMessageFormat(ctx, FatalLevel, format, args...)
+}
+
+func (l *SimpleLogger) Panicf(ctx interface{}, format string, args ...interface{}) {
+	l.logCtxMessageFormat(ctx, PanicLevel, format, args...)
+}
+
+func (l *SimpleLogger) logCtxMessage(ctx interface{}, level LogLevel, message interface{}) {
 	if ctx == nil {
 		panic("Context cannot be nil")
 	}
@@ -91,17 +126,50 @@ func (l *SimpleLogger) logCtx(ctx interface{}, level LogLevel, args ...interface
 	}
 	switch level {
 	case TraceLevel:
-		entry.Trace(args)
+		entry.Trace(message)
 	case InfoLevel:
-		entry.Info(args)
+		entry.Info(message)
 	case WarnLevel:
-		entry.Warn(args)
+		entry.Warn(message)
 	case ErrorLevel:
-		entry.Error(args)
+		entry.Error(message)
 	case FatalLevel:
-		entry.Fatal(args)
+		entry.Fatal(message)
 	case PanicLevel:
-		entry.Panic(args)
+		entry.Panic(message)
+	}
+}
+
+func (l *SimpleLogger) logCtxMessageFormat(ctx interface{}, level LogLevel, format string, args ...interface{}) {
+	if ctx == nil {
+		panic("Context cannot be nil")
+	}
+	var entry *logrus.Entry
+	switch ctx.(type) {
+	case Context:
+		entry = l.log.WithFields(logrus.Fields{
+			"context_id": ctx.(Context).GetContextId(),
+		})
+	case ContextId:
+		entry = l.log.WithFields(logrus.Fields{
+			"context_id": ctx,
+		})
+	default:
+		panic("First parameter must be Context or Context Id")
+	}
+	switch level {
+	case TraceLevel:
+		entry.Tracef(format, args...)
+	case InfoLevel:
+		entry.Infof(format, args...)
+	case WarnLevel:
+		entry.Warnf(format, args...)
+	case ErrorLevel:
+		entry.Errorf(format, args...)
+	case FatalLevel:
+		entry.Fatalf(format, args...)
+	case PanicLevel:
+		entry.Panicf(format, args...)
 	}
 }
 
@@ -129,10 +197,11 @@ func (f *LogFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	}
 
 	var logContextId = ""
-	contextId := entry.Data["context_id"].(string)
+	contextId := entry.Data["context_id"].(ContextId)
 	if contextId != "" {
-		separatorIndex := strings.Index(contextId, "-")
-		logContextId = logContextId[:separatorIndex]
+		contextIdStr := string(contextId)
+		separatorIndex := strings.Index(contextIdStr, "-")
+		logContextId = contextIdStr[:separatorIndex]
 	}
 
 	return []byte(
