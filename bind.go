@@ -23,7 +23,7 @@ func (binder ConfigurationPropertiesBinder) Bind(target interface{}) error {
 		return nil
 	}
 	if properties, ok := target.(ConfigurationProperties); ok {
-		prefix := properties.GetPrefix()
+		prefix := properties.GetConfigurationPrefix()
 		if prefix == "" {
 			return errors.New("prefix must not be null")
 		}
