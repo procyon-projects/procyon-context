@@ -28,6 +28,7 @@ type ApplicationContext interface {
 }
 
 type ConfigurableContext interface {
+	SetLogger(logger Logger)
 	SetEnvironment(environment core.ConfigurableEnvironment)
 	GetEnvironment() core.ConfigurableEnvironment
 	GetPeaFactory() peas.ConfigurablePeaFactory
@@ -52,6 +53,7 @@ type BaseApplicationContext struct {
 	contextId                   ContextId
 	name                        string
 	startupTimestamp            int64
+	logger                      Logger
 	environment                 core.ConfigurableEnvironment
 	mu                          *sync.RWMutex
 	applicationEventBroadcaster ApplicationEventBroadcaster
@@ -86,6 +88,13 @@ func (ctx *BaseApplicationContext) initContext() {
 		peaDefinition := peas.NewSimplePeaDefinition(goo.GetType(NewEventListenerProcessor))
 		peaDefinitionRegistry.RegisterPeaDefinition(eventListenerProcessor, peaDefinition)
 	}
+}
+
+func (ctx *BaseApplicationContext) SetLogger(logger Logger) {
+	if ctx.logger != nil {
+		panic("There is already a logger, you cannot change it")
+	}
+	ctx.logger = logger
 }
 
 func (ctx *BaseApplicationContext) SetApplicationName(name string) {
@@ -169,7 +178,7 @@ func (ctx *BaseApplicationContext) preparePeaFactory() (err error) {
 	if err != nil {
 		return err
 	}
-	err = peaFactory.RegisterSharedPea("logger", ctx.GetLogger())
+	err = peaFactory.RegisterSharedPea("logger", ctx.logger)
 	if err != nil {
 		return err
 	}
