@@ -28,13 +28,10 @@ type ApplicationContext interface {
 }
 
 type ConfigurableContext interface {
-	SetLogger(logger Logger)
-	GetLogger() Logger
 	SetEnvironment(environment core.ConfigurableEnvironment)
 	GetEnvironment() core.ConfigurableEnvironment
 	GetPeaFactory() peas.ConfigurablePeaFactory
 	AddApplicationListener(listener ApplicationListener)
-	Copy(cloneContext ConfigurableContext, contextId ContextId)
 }
 
 type ConfigurableApplicationContext interface {
@@ -55,7 +52,6 @@ type BaseApplicationContext struct {
 	contextId                   ContextId
 	name                        string
 	startupTimestamp            int64
-	logger                      Logger
 	environment                 core.ConfigurableEnvironment
 	mu                          *sync.RWMutex
 	applicationEventBroadcaster ApplicationEventBroadcaster
@@ -126,17 +122,6 @@ func (ctx *BaseApplicationContext) SetEnvironment(environment core.ConfigurableE
 
 func (ctx *BaseApplicationContext) GetEnvironment() core.ConfigurableEnvironment {
 	return ctx.environment
-}
-
-func (ctx *BaseApplicationContext) SetLogger(logger Logger) {
-	if ctx.logger != nil {
-		panic("There is already a logger, you cannot change it")
-	}
-	ctx.logger = logger
-}
-
-func (ctx *BaseApplicationContext) GetLogger() Logger {
-	return ctx.logger
 }
 
 func (ctx *BaseApplicationContext) AddApplicationListener(listener ApplicationListener) {
@@ -288,18 +273,4 @@ func (ctx *BaseApplicationContext) finishPeaFactoryInitialization() {
 
 func (ctx *BaseApplicationContext) GetPeaFactory() peas.ConfigurablePeaFactory {
 	return ctx.ConfigurablePeaFactory
-}
-
-func (ctx *BaseApplicationContext) Copy(cloneContext ConfigurableContext, contextId ContextId) {
-	if clone, ok := cloneContext.(*BaseApplicationContext); ok {
-		clone.appId = ctx.appId
-		clone.contextId = contextId
-		clone.name = ctx.name
-		clone.startupTimestamp = ctx.startupTimestamp
-		clone.mu = ctx.mu
-		clone.ConfigurableContextAdapter = ctx.ConfigurableContextAdapter
-		clone.environment = ctx.environment
-		clone.applicationListeners = ctx.applicationListeners
-		clone.applicationEventBroadcaster = ctx.applicationEventBroadcaster
-	}
 }

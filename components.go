@@ -7,31 +7,6 @@ import (
 	"strings"
 )
 
-type RepositoryMetadata struct {
-	typ goo.Type
-}
-
-type Repository interface {
-	GetRepositoryMetadata() RepositoryMetadata
-}
-
-func NewRepositoryMetadata(typ goo.Type) RepositoryMetadata {
-	return RepositoryMetadata{
-		typ,
-	}
-}
-
-type ServiceMetadata struct {
-}
-
-func NewServiceMetadata() ServiceMetadata {
-	return ServiceMetadata{}
-}
-
-type Service interface {
-	GetServiceMetadata() ServiceMetadata
-}
-
 type ScannedPeaDefinition struct {
 	*peas.SimplePeaDefinition
 	componentName string

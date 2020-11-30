@@ -59,10 +59,6 @@ func (processor ConfigurationPropertiesBindingProcessor) BeforePeaInitialization
 	return pea, nil
 }
 
-func (processor ConfigurationPropertiesBindingProcessor) InitializePea() error {
-	return nil
-}
-
 func (processor ConfigurationPropertiesBindingProcessor) AfterPeaInitialization(peaName string, pea interface{}) (interface{}, error) {
 	return pea, nil
 }
