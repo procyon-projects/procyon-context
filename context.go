@@ -29,6 +29,7 @@ type ApplicationContext interface {
 
 type ConfigurableContext interface {
 	SetLogger(logger Logger)
+	GetLogger() Logger
 	SetEnvironment(environment core.ConfigurableEnvironment)
 	GetEnvironment() core.ConfigurableEnvironment
 	GetPeaFactory() peas.ConfigurablePeaFactory
@@ -95,6 +96,10 @@ func (ctx *BaseApplicationContext) SetLogger(logger Logger) {
 		panic("There is already a logger, you cannot change it")
 	}
 	ctx.logger = logger
+}
+
+func (ctx *BaseApplicationContext) GetLogger() Logger {
+	return ctx.logger
 }
 
 func (ctx *BaseApplicationContext) SetApplicationName(name string) {
