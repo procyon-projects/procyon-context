@@ -1,8 +1,10 @@
 <img src="https://procyon-projects.github.io/img/logo.png" width="128">
 
 # Procyon Context
+[![codecov](https://codecov.io/gh/procyon-projects/procyon-context/branch/master/graph/badge.svg?token=8Q2DVS1SZX)](https://codecov.io/gh/procyon-projects/procyon-context)
 [![Build Status](https://travis-ci.com/procyon-projects/procyon-context.svg?branch=master)](https://travis-ci.com/procyon-projects/procyon-context)
-
+[![Gitter](https://badges.gitter.im/procyon-projects/community.svg)](https://gitter.im/procyon-projects/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![PkgGoDev](https://pkg.go.dev/badge/procyon-projects/procyon)](https://pkg.go.dev/github.com/procyon-projects/procyon-context)
 
 This gives you a basic understanding of Procyon Context Module. It covers
 components provided by the framework, such as Logger, Properties, Initializers and Events.
