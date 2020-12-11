@@ -127,6 +127,8 @@ func (l *SimpleLogger) logCtxMessage(ctx interface{}, level LogLevel, message in
 	switch level {
 	case TraceLevel:
 		entry.Trace(message)
+	case DebugLevel:
+		entry.Debug(message)
 	case InfoLevel:
 		entry.Info(message)
 	case WarnLevel:
@@ -160,6 +162,8 @@ func (l *SimpleLogger) logCtxMessageFormat(ctx interface{}, level LogLevel, form
 	switch level {
 	case TraceLevel:
 		entry.Tracef(format, args...)
+	case DebugLevel:
+		entry.Debugf(format, args...)
 	case InfoLevel:
 		entry.Infof(format, args...)
 	case WarnLevel:
