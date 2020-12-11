@@ -67,21 +67,9 @@ func (scanner ComponentPeaDefinitionScanner) DoScan() {
 	}
 	for _, peaDefinition := range scannedPeaDefinitions {
 		peaName := scanner.peaNameGenerator.GenerateName(peaDefinition)
-		if scanner.checkPeaDefinition(peaName, peaDefinition) {
+		if !scanner.peaRegistry.ContainsPeaDefinition(peaName) {
 			peaDefinitionHolder := peas.NewPeaDefinitionHolder(peaName, peaDefinition)
-			scanner.registerPeaDefinition(peaDefinitionHolder)
+			scanner.peaRegistry.RegisterPeaDefinition(peaName, peaDefinitionHolder.GetPeaDefinition())
 		}
 	}
-}
-
-func (scanner ComponentPeaDefinitionScanner) checkPeaDefinition(peaName string, peaDefinition peas.PeaDefinition) bool {
-	if !scanner.peaRegistry.ContainsPeaDefinition(peaName) {
-		return true
-	}
-	return false
-}
-
-func (scanner ComponentPeaDefinitionScanner) registerPeaDefinition(peaDefinitionHolder *peas.PeaDefinitionHolder) {
-	peaName := peaDefinitionHolder.GetPeaName()
-	scanner.peaRegistry.RegisterPeaDefinition(peaName, peaDefinitionHolder.GetPeaDefinition())
 }
