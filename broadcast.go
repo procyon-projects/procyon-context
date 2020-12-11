@@ -26,6 +26,12 @@ func NewSimpleApplicationEventBroadcaster() *SimpleApplicationEventBroadcaster {
 func (broadcaster *SimpleApplicationEventBroadcaster) RegisterApplicationListener(listener ApplicationListener) {
 	broadcaster.mu.Lock()
 	for _, eventId := range listener.SubscribeEvents() {
+		for _, eventListener := range broadcaster.eventListenerMap[eventId] {
+			if eventListener.GetApplicationListenerName() == listener.GetApplicationListenerName() {
+				broadcaster.mu.Unlock()
+				return
+			}
+		}
 		broadcaster.eventListenerMap[eventId] = append(broadcaster.eventListenerMap[eventId], listener)
 	}
 	broadcaster.mu.Unlock()
@@ -33,8 +39,28 @@ func (broadcaster *SimpleApplicationEventBroadcaster) RegisterApplicationListene
 
 func (broadcaster *SimpleApplicationEventBroadcaster) UnregisterApplicationListener(listener ApplicationListener) {
 	broadcaster.mu.Lock()
-	//.....
+	for _, eventId := range listener.SubscribeEvents() {
+		for registeredEventId, events := range broadcaster.eventListenerMap {
+			if eventId == registeredEventId {
+				broadcaster.deleteEventListener(registeredEventId, listener, events)
+			}
+		}
+	}
 	broadcaster.mu.Unlock()
+}
+
+func (broadcaster *SimpleApplicationEventBroadcaster) deleteEventListener(eventId ApplicationEventId, listener ApplicationListener, eventListeners []ApplicationListener) {
+	tempListeners := eventListeners
+	for index, eventListener := range tempListeners {
+		if eventListener.GetApplicationListenerName() == listener.GetApplicationListenerName() {
+			tempListeners = append(tempListeners[:index], tempListeners[index+1:]...)
+		}
+	}
+	if len(tempListeners) == 0 {
+		delete(broadcaster.eventListenerMap, eventId)
+	} else {
+		broadcaster.eventListenerMap[eventId] = tempListeners
+	}
 }
 
 func (broadcaster *SimpleApplicationEventBroadcaster) RemoveAllApplicationListeners() {
@@ -48,10 +74,6 @@ func (broadcaster *SimpleApplicationEventBroadcaster) BroadcastEvent(context App
 	listeners := broadcaster.eventListenerMap[event.GetEventId()]
 	broadcaster.mu.Unlock()
 	for _, listener := range listeners {
-		broadcaster.invokeListener(context, listener, event)
+		listener.OnApplicationEvent(context, event)
 	}
-}
-
-func (broadcaster *SimpleApplicationEventBroadcaster) invokeListener(context ApplicationContext, listener ApplicationListener, event ApplicationEvent) {
-	listener.OnApplicationEvent(context, event)
 }

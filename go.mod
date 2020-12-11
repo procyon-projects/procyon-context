@@ -11,6 +11,7 @@ require (
 	github.com/procyon-projects/procyon-core v0.0.0-20201203210426-57669e824045
 	github.com/procyon-projects/procyon-peas v0.0.0-20201203222622-41a185f673de
 	github.com/sirupsen/logrus v1.7.0
+	github.com/stretchr/testify v1.6.1
 	golang.org/x/sys v0.0.0-20201202213521-69691e467435 // indirect
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200605160147-a5ece683394c // indirect
