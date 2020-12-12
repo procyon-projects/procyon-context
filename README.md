@@ -1,6 +1,7 @@
 <img src="https://procyon-projects.github.io/img/logo.png" width="128">
 
 # Procyon Context
+[![Go Report Card](https://goreportcard.com/badge/github.com/procyon-projects/procyon-context)](https://goreportcard.com/report/github.com/procyon-projects/procyon-context)
 [![codecov](https://codecov.io/gh/procyon-projects/procyon-context/branch/master/graph/badge.svg?token=8Q2DVS1SZX)](https://codecov.io/gh/procyon-projects/procyon-context)
 [![Build Status](https://travis-ci.com/procyon-projects/procyon-context.svg?branch=master)](https://travis-ci.com/procyon-projects/procyon-context)
 [![Gitter](https://badges.gitter.im/procyon-projects/community.svg)](https://gitter.im/procyon-projects/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
