@@ -21,9 +21,38 @@ func (adapter testConfigurableContextAdapter) FinishConfigure() {
 
 }
 
+func TestBaseApplicationContext_WithNilConfigurableContextAdapter(t *testing.T) {
+	assert.Panics(t, func() {
+		NewBaseApplicationContext("app-id", "context-id", nil)
+	})
+}
+
+func TestBaseApplicationContext_SetLogger(t *testing.T) {
+	baseApplicationContext := NewBaseApplicationContext("app-id", "context-id", testConfigurableContextAdapter{})
+	logger := NewSimpleLogger()
+	baseApplicationContext.SetLogger(logger)
+	assert.Panics(t, func() {
+		baseApplicationContext.SetLogger(logger)
+	})
+	baseApplicationContext.AddApplicationListener(testApplicationListener1{})
+	baseApplicationContext.AddApplicationListener(testApplicationListener2{})
+
+	assert.Equal(t, 2, len(baseApplicationContext.GetApplicationListeners()))
+}
+
+func TestBaseApplicationContext_AddApplicationListener(t *testing.T) {
+	baseApplicationContext := NewBaseApplicationContext("app-id", "context-id", testConfigurableContextAdapter{})
+	assert.Panics(t, func() {
+		baseApplicationContext.AddApplicationListener(nil)
+	})
+}
+
 func TestBaseApplicationContext(t *testing.T) {
 	baseApplicationContext := NewBaseApplicationContext("app-id", "context-id", testConfigurableContextAdapter{})
 	baseApplicationContext.Get("")
+
+	baseApplicationContext.AddApplicationListener(testApplicationListener1{})
+	baseApplicationContext.AddApplicationListener(testApplicationListener2{})
 
 	logger := NewSimpleLogger()
 	baseApplicationContext.SetLogger(logger)

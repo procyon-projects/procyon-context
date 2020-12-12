@@ -71,35 +71,54 @@ func (event testEvent2) GetTimestamp() int64 {
 	return 0
 }
 
-type testApplicationListener struct {
+type testApplicationListener1 struct {
 	mock.Mock
 }
 
-func (listener testApplicationListener) GetApplicationListenerName() string {
-	return "github.com.procyon.projects.testApplicationListener"
+func (listener testApplicationListener1) GetApplicationListenerName() string {
+	return "github.com.procyon.projects.testApplicationListener1"
 }
 
-func (listener testApplicationListener) SubscribeEvents() []ApplicationEventId {
+func (listener testApplicationListener1) SubscribeEvents() []ApplicationEventId {
 	return []ApplicationEventId{
 		getTestEventId1(),
 		getTestEventId2(),
 	}
 }
 
-func (listener testApplicationListener) OnApplicationEvent(context Context, event ApplicationEvent) {
+func (listener testApplicationListener1) OnApplicationEvent(context Context, event ApplicationEvent) {
+	listener.Called(context, event)
+}
+
+type testApplicationListener2 struct {
+	mock.Mock
+}
+
+func (listener testApplicationListener2) GetApplicationListenerName() string {
+	return "github.com.procyon.projects.testApplicationListener2"
+}
+
+func (listener testApplicationListener2) SubscribeEvents() []ApplicationEventId {
+	return []ApplicationEventId{
+		getTestEventId1(),
+		getTestEventId2(),
+	}
+}
+
+func (listener testApplicationListener2) OnApplicationEvent(context Context, event ApplicationEvent) {
 	listener.Called(context, event)
 }
 
 func TestSimpleApplicationEventBroadcaster_RegisterApplicationListener(t *testing.T) {
 	broadcaster := NewSimpleApplicationEventBroadcaster()
-	broadcaster.RegisterApplicationListener(testApplicationListener{})
+	broadcaster.RegisterApplicationListener(testApplicationListener1{})
 	assert.Equal(t, 1, len(broadcaster.eventListenerMap[getTestEventId1()]))
 	assert.Equal(t, 1, len(broadcaster.eventListenerMap[getTestEventId2()]))
 }
 
 func TestSimpleApplicationEventBroadcaster_RemoveAllApplicationListeners(t *testing.T) {
 	broadcaster := NewSimpleApplicationEventBroadcaster()
-	broadcaster.RegisterApplicationListener(testApplicationListener{})
+	broadcaster.RegisterApplicationListener(testApplicationListener1{})
 	broadcaster.RemoveAllApplicationListeners()
 	assert.Equal(t, 0, len(broadcaster.eventListenerMap))
 }
@@ -107,7 +126,7 @@ func TestSimpleApplicationEventBroadcaster_RemoveAllApplicationListeners(t *test
 func TestSimpleApplicationEventBroadcaster_BroadcastEvent(t *testing.T) {
 	context := &testContext{}
 	broadcaster := NewSimpleApplicationEventBroadcaster()
-	listener := testApplicationListener{}
+	listener := testApplicationListener1{}
 
 	testEvent1 := testEvent1{}
 	listener.On("OnApplicationEvent", context, testEvent1)
@@ -124,9 +143,32 @@ func TestSimpleApplicationEventBroadcaster_BroadcastEvent(t *testing.T) {
 
 func TestSimpleApplicationEventBroadcaster_UnregisterApplicationListener(t *testing.T) {
 	broadcaster := NewSimpleApplicationEventBroadcaster()
-	listener := testApplicationListener{}
+	listener := testApplicationListener1{}
 	broadcaster.RegisterApplicationListener(listener)
 	assert.Equal(t, 2, len(broadcaster.eventListenerMap))
 	broadcaster.UnregisterApplicationListener(listener)
 	assert.Equal(t, 0, len(broadcaster.eventListenerMap))
+}
+
+func TestNewSimpleApplicationEventBroadcaster_MultipleApplicationListener(t *testing.T) {
+	broadcaster := NewSimpleApplicationEventBroadcaster()
+	broadcaster.RegisterApplicationListener(testApplicationListener1{})
+	broadcaster.RegisterApplicationListener(testApplicationListener2{})
+	assert.Equal(t, 2, len(broadcaster.eventListenerMap[testEventId1]))
+	assert.Equal(t, 2, len(broadcaster.eventListenerMap[testEventId1]))
+
+	broadcaster.UnregisterApplicationListener(testApplicationListener2{})
+	assert.Equal(t, 1, len(broadcaster.eventListenerMap[testEventId1]))
+	assert.Equal(t, 1, len(broadcaster.eventListenerMap[testEventId1]))
+}
+
+func TestNewSimpleApplicationEventBroadcaster_RegisterApplicationListenerWithRegisteredListenerBefore(t *testing.T) {
+	broadcaster := NewSimpleApplicationEventBroadcaster()
+	broadcaster.RegisterApplicationListener(testApplicationListener1{})
+	assert.Equal(t, 1, len(broadcaster.eventListenerMap[testEventId1]))
+	assert.Equal(t, 1, len(broadcaster.eventListenerMap[testEventId1]))
+
+	broadcaster.RegisterApplicationListener(testApplicationListener1{})
+	assert.Equal(t, 1, len(broadcaster.eventListenerMap[testEventId1]))
+	assert.Equal(t, 1, len(broadcaster.eventListenerMap[testEventId1]))
 }

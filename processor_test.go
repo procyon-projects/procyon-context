@@ -93,3 +93,25 @@ func TestConfigurationPropertiesBindingProcessor(t *testing.T) {
 
 	os.Args = tempArgs
 }
+
+func TestConfigurationPropertiesBindingProcessor_WithEmptyInstance(t *testing.T) {
+	standardEnvironment := core.NewStandardEnvironment()
+
+	propertySources := core.NewSimpleCommandLinePropertySource(os.Args)
+	standardEnvironment.GetPropertySources().Add(propertySources)
+	propertiesBindingProcessor := NewConfigurationPropertiesBindingProcessor(standardEnvironment, core.NewDefaultTypeConverterService())
+	pea, err := propertiesBindingProcessor.BeforePeaInitialization("test", nil)
+	assert.Nil(t, err)
+	assert.Nil(t, pea)
+}
+
+func TestConfigurationPropertiesBindingProcessor_WithNonConfigurationPropertiesInstance(t *testing.T) {
+	standardEnvironment := core.NewStandardEnvironment()
+
+	propertySources := core.NewSimpleCommandLinePropertySource(os.Args)
+	standardEnvironment.GetPropertySources().Add(propertySources)
+	propertiesBindingProcessor := NewConfigurationPropertiesBindingProcessor(standardEnvironment, core.NewDefaultTypeConverterService())
+	pea, err := propertiesBindingProcessor.BeforePeaInitialization("test", testContext{})
+	assert.Nil(t, err)
+	assert.NotNil(t, pea)
+}
