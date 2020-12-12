@@ -19,22 +19,51 @@ func TestBootstrapProcessor(t *testing.T) {
 	mockRegistry.AssertExpectations(t)
 }
 
-type testProperties struct {
-	DriverName   string `yaml:"driver-name" json:"driver-name"`
-	Username     string `yaml:"username" json:"username"`
-	Password     string `yaml:"password" json:"password"`
-	DatabaseName string `yaml:"database-name" json:"database-name"`
-	Port         uint16 `yaml:"port" json:"port"`
-	Timeout      uint32 `yaml:"timeout" json:"timeout"`
+func TestConfigurationPropertiesBindingProcessor_WithNonPointer(t *testing.T) {
+	standardEnvironment := core.NewStandardEnvironment()
+	propertySources := core.NewSimpleCommandLinePropertySource(os.Args)
+	standardEnvironment.GetPropertySources().Add(propertySources)
+	propertiesBindingProcessor := NewConfigurationPropertiesBindingProcessor(standardEnvironment, core.NewDefaultTypeConverterService())
+
+	properties := testProperties{}
+	pea, err := propertiesBindingProcessor.BeforePeaInitialization("test", properties)
+	assert.NotNil(t, err)
+	assert.Equal(t, "configuration properties cannot be bound as it is not a type of pointer", err.Error())
+	assert.Nil(t, pea)
+
+	pea, err = propertiesBindingProcessor.AfterPeaInitialization("test", properties)
+	assert.Nil(t, err)
+	assert.NotNil(t, pea)
 }
 
-func (testProperties) GetConfigurationPrefix() string {
-	return "test"
+type testPropertiesWithEmptyPrefix struct {
+}
+
+func (testPropertiesWithEmptyPrefix) GetConfigurationPrefix() string {
+	return ""
+}
+
+func TestConfigurationPropertiesBindingProcessor_WithEmptyPrefix(t *testing.T) {
+	standardEnvironment := core.NewStandardEnvironment()
+	propertySources := core.NewSimpleCommandLinePropertySource(os.Args)
+	standardEnvironment.GetPropertySources().Add(propertySources)
+	propertiesBindingProcessor := NewConfigurationPropertiesBindingProcessor(standardEnvironment, core.NewDefaultTypeConverterService())
+
+	properties := testPropertiesWithEmptyPrefix{}
+	pea, err := propertiesBindingProcessor.BeforePeaInitialization("test", properties)
+	assert.NotNil(t, err)
+	assert.Equal(t, "prefix must not be null", err.Error())
+	assert.Nil(t, pea)
+
+	pea, err = propertiesBindingProcessor.AfterPeaInitialization("test", properties)
+	assert.Nil(t, err)
+	assert.NotNil(t, pea)
 }
 
 func TestConfigurationPropertiesBindingProcessor(t *testing.T) {
 	standardEnvironment := core.NewStandardEnvironment()
 
+	tempArgs := os.Args
 	os.Args = append(os.Args, "--test.driver-name=test-driver")
 	os.Args = append(os.Args, "--test.username=test-user")
 	os.Args = append(os.Args, "--test.password=test-pass")
@@ -44,11 +73,16 @@ func TestConfigurationPropertiesBindingProcessor(t *testing.T) {
 
 	propertySources := core.NewSimpleCommandLinePropertySource(os.Args)
 	standardEnvironment.GetPropertySources().Add(propertySources)
-	propertiesBindingProcessor := newConfigurationPropertiesBinder(standardEnvironment, core.NewDefaultTypeConverterService())
+	propertiesBindingProcessor := NewConfigurationPropertiesBindingProcessor(standardEnvironment, core.NewDefaultTypeConverterService())
 
 	properties := &testProperties{}
-	err := propertiesBindingProcessor.Bind(properties)
+	pea, err := propertiesBindingProcessor.BeforePeaInitialization("test", properties)
 	assert.Nil(t, err)
+	assert.NotNil(t, pea)
+
+	pea, err = propertiesBindingProcessor.AfterPeaInitialization("test", properties)
+	assert.Nil(t, err)
+	assert.NotNil(t, pea)
 
 	assert.Equal(t, "test-driver", properties.DriverName)
 	assert.Equal(t, "test-user", properties.Username)
@@ -56,4 +90,6 @@ func TestConfigurationPropertiesBindingProcessor(t *testing.T) {
 	assert.Equal(t, "test-db", properties.DatabaseName)
 	assert.Equal(t, uint16(3000), properties.Port)
 	assert.Equal(t, uint32(1000), properties.Timeout)
+
+	os.Args = tempArgs
 }

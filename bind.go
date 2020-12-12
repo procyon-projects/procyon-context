@@ -28,7 +28,7 @@ func (binder ConfigurationPropertiesBinder) Bind(target interface{}) error {
 			return errors.New("prefix must not be null")
 		}
 		if !goo.GetType(target).IsPointer() {
-			return errors.New("configuration properties cannot be bound as it is not a pointer of type")
+			return errors.New("configuration properties cannot be bound as it is not a type of pointer")
 		}
 		return binder.bindTargetFields(prefix, target)
 	}
