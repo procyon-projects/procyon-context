@@ -73,4 +73,5 @@ func TestComponentPeaDefinitionScanner_DoScan(t *testing.T) {
 
 	scanner := NewComponentPeaDefinitionScanner(mockRegistry)
 	scanner.DoScan()
+	mockRegistry.AssertExpectations(t)
 }

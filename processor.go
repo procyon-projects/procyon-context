@@ -1,7 +1,6 @@
 package context
 
 import (
-	"errors"
 	core "github.com/procyon-projects/procyon-core"
 	peas "github.com/procyon-projects/procyon-peas"
 )
@@ -54,7 +53,7 @@ func NewConfigurationPropertiesBindingProcessor(env core.Environment, typeConver
 func (processor ConfigurationPropertiesBindingProcessor) BeforePeaInitialization(peaName string, pea interface{}) (interface{}, error) {
 	err := processor.binder.Bind(pea)
 	if err != nil {
-		return nil, errors.New("error occurred while configuration properties was being binding to pea instance : " + peaName)
+		return nil, err
 	}
 	return pea, nil
 }
