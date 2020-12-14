@@ -1,7 +1,7 @@
 package context
 
 import (
-	"github.com/codnect/goo"
+	"github.com/procyon-projects/goo"
 	core "github.com/procyon-projects/procyon-core"
 	peas "github.com/procyon-projects/procyon-peas"
 	"strings"

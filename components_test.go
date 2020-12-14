@@ -1,7 +1,7 @@
 package context
 
 import (
-	"github.com/codnect/goo"
+	"github.com/procyon-projects/goo"
 	peas "github.com/procyon-projects/procyon-peas"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -58,7 +58,7 @@ func (registry mockPeaRegistry) GetPeaDefinitionCount() int {
 	return results.Int(0)
 }
 
-func (registry mockPeaRegistry) GetPeaNamesForType(typ goo.Type) []string {
+func (registry mockPeaRegistry) GetPeaNamesByType(typ goo.Type) []string {
 	results := registry.Called(typ)
 	if results == nil {
 		return nil
