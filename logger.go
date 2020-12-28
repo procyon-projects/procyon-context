@@ -7,6 +7,24 @@ import (
 	"strings"
 )
 
+type LoggingProperties struct {
+	Level string `yaml:"level" json:"level" default:"TRACE"`
+	File  string `yaml:"file" json:"file"`
+	Path  string `yaml:"path" json:"path"`
+}
+
+func newLoggingProperties() *LoggingProperties {
+	return &LoggingProperties{}
+}
+
+func (properties *LoggingProperties) GetConfigurationPrefix() string {
+	return "logging"
+}
+
+type LoggerConfiguration interface {
+	ApplyLoggerProperties(properties LoggingProperties)
+}
+
 type LogLevel uint32
 
 const (
@@ -49,6 +67,29 @@ func NewSimpleLogger() *SimpleLogger {
 		},
 	}
 	return log
+}
+
+func (l *SimpleLogger) ApplyLoggerProperties(properties LoggingProperties) {
+	defaultLoggerLevel := logrus.DebugLevel
+	switch properties.Level {
+	case "TRACE":
+		defaultLoggerLevel = logrus.TraceLevel
+	case "DEBUG":
+		defaultLoggerLevel = logrus.DebugLevel
+	case "INFO":
+		defaultLoggerLevel = logrus.InfoLevel
+	case "ERROR":
+		defaultLoggerLevel = logrus.ErrorLevel
+	case "WARNING":
+		defaultLoggerLevel = logrus.WarnLevel
+	case "FATAL":
+		defaultLoggerLevel = logrus.FatalLevel
+	case "PANIC":
+		defaultLoggerLevel = logrus.PanicLevel
+	default:
+		defaultLoggerLevel = logrus.TraceLevel
+	}
+	l.log.Level = defaultLoggerLevel
 }
 
 func (l *SimpleLogger) Trace(ctx interface{}, message interface{}) {
