@@ -8,21 +8,17 @@ import (
 )
 
 type LoggingProperties struct {
-	Level string `yaml:"level" json:"level" default:"TRACE"`
-	File  string `yaml:"file" json:"file"`
-	Path  string `yaml:"path" json:"path"`
-}
-
-func newLoggingProperties() *LoggingProperties {
-	return &LoggingProperties{}
+	Level    string `yaml:"level" json:"level" default:"TRACE"`
+	FileName string `yaml:"file.name" json:"file.name"`
+	FilePath string `yaml:"file.path" json:"file.path"`
 }
 
 func (properties *LoggingProperties) GetConfigurationPrefix() string {
 	return "logging"
 }
 
-type LoggerConfiguration interface {
-	ApplyLoggerProperties(properties LoggingProperties)
+type LoggingConfiguration interface {
+	ApplyLoggingProperties(properties LoggingProperties)
 }
 
 type LogLevel uint32
@@ -69,27 +65,36 @@ func NewSimpleLogger() *SimpleLogger {
 	return log
 }
 
-func (l *SimpleLogger) ApplyLoggerProperties(properties LoggingProperties) {
-	defaultLoggerLevel := logrus.DebugLevel
+func (l *SimpleLogger) ApplyLoggingProperties(properties LoggingProperties) {
+	loggerLevel := logrus.DebugLevel
 	switch properties.Level {
 	case "TRACE":
-		defaultLoggerLevel = logrus.TraceLevel
+		loggerLevel = logrus.TraceLevel
 	case "DEBUG":
-		defaultLoggerLevel = logrus.DebugLevel
+		loggerLevel = logrus.DebugLevel
 	case "INFO":
-		defaultLoggerLevel = logrus.InfoLevel
+		loggerLevel = logrus.InfoLevel
 	case "ERROR":
-		defaultLoggerLevel = logrus.ErrorLevel
+		loggerLevel = logrus.ErrorLevel
 	case "WARNING":
-		defaultLoggerLevel = logrus.WarnLevel
+		loggerLevel = logrus.WarnLevel
 	case "FATAL":
-		defaultLoggerLevel = logrus.FatalLevel
+		loggerLevel = logrus.FatalLevel
 	case "PANIC":
-		defaultLoggerLevel = logrus.PanicLevel
+		loggerLevel = logrus.PanicLevel
 	default:
-		defaultLoggerLevel = logrus.TraceLevel
+		loggerLevel = logrus.TraceLevel
 	}
-	l.log.Level = defaultLoggerLevel
+	l.log.Level = loggerLevel
+
+	fullLogPath := properties.FilePath + "/" + properties.FileName
+	if fullLogPath != "" {
+		logFile, err := os.OpenFile(fullLogPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+		if err != nil {
+			panic("Could Not Open Log File : " + err.Error())
+		}
+		l.log.SetOutput(logFile)
+	}
 }
 
 func (l *SimpleLogger) Trace(ctx interface{}, message interface{}) {
