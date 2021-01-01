@@ -41,6 +41,7 @@ type Logger interface {
 	Error(ctx interface{}, message interface{})
 	Fatal(ctx interface{}, message interface{})
 	Panic(ctx interface{}, message interface{})
+	Print(ctx interface{}, message interface{})
 	Tracef(ctx interface{}, format string, args ...interface{})
 	Debugf(ctx interface{}, format string, args ...interface{})
 	Infof(ctx interface{}, format string, args ...interface{})
@@ -48,6 +49,7 @@ type Logger interface {
 	Errorf(ctx interface{}, format string, args ...interface{})
 	Fatalf(ctx interface{}, format string, args ...interface{})
 	Panicf(ctx interface{}, format string, args ...interface{})
+	Printf(ctx interface{}, format string, args ...interface{})
 }
 
 type SimpleLogger struct {
@@ -87,89 +89,84 @@ func (l *SimpleLogger) ApplyLoggingProperties(properties LoggingProperties) {
 	}
 	l.log.Level = loggerLevel
 
-	fullLogPath := properties.FilePath + "/" + properties.FileName
+	fullLogPath := properties.FilePath + properties.FileName
 	if fullLogPath != "" {
 		logFile, err := os.OpenFile(fullLogPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 		if err != nil {
 			panic("Could Not Open Log File : " + err.Error())
 		}
 		l.log.SetOutput(logFile)
+	} else {
+		l.log.Formatter.(*LogFormatter).isTerminal = true
 	}
 }
 
 func (l *SimpleLogger) Trace(ctx interface{}, message interface{}) {
-	l.logCtxMessage(ctx, TraceLevel, message)
+	l.logMessage(ctx, TraceLevel, message)
 }
 
 func (l *SimpleLogger) Debug(ctx interface{}, message interface{}) {
-	l.logCtxMessage(ctx, DebugLevel, message)
+	l.logMessage(ctx, DebugLevel, message)
 }
 
 func (l *SimpleLogger) Info(ctx interface{}, message interface{}) {
-	l.logCtxMessage(ctx, InfoLevel, message)
+	l.logMessage(ctx, InfoLevel, message)
 }
 
 func (l SimpleLogger) Warning(ctx interface{}, message interface{}) {
-	l.logCtxMessage(ctx, WarnLevel, message)
+	l.logMessage(ctx, WarnLevel, message)
 }
 
 func (l *SimpleLogger) Error(ctx interface{}, message interface{}) {
-	l.logCtxMessage(ctx, ErrorLevel, message)
+	l.logMessage(ctx, ErrorLevel, message)
 }
 
 func (l *SimpleLogger) Fatal(ctx interface{}, message interface{}) {
-	l.logCtxMessage(ctx, FatalLevel, message)
+	l.logMessage(ctx, FatalLevel, message)
 }
 
 func (l *SimpleLogger) Panic(ctx interface{}, message interface{}) {
-	l.logCtxMessage(ctx, PanicLevel, message)
+	l.logMessage(ctx, PanicLevel, message)
+}
+
+func (l *SimpleLogger) Print(ctx interface{}, message interface{}) {
+	l.log.Print(message)
 }
 
 func (l *SimpleLogger) Tracef(ctx interface{}, format string, args ...interface{}) {
-	l.logCtxMessageFormat(ctx, TraceLevel, format, args...)
+	l.logMessageWithFormat(ctx, TraceLevel, format, args...)
 }
 
 func (l *SimpleLogger) Debugf(ctx interface{}, format string, args ...interface{}) {
-	l.logCtxMessageFormat(ctx, DebugLevel, format, args...)
+	l.logMessageWithFormat(ctx, DebugLevel, format, args...)
 }
 
 func (l *SimpleLogger) Infof(ctx interface{}, format string, args ...interface{}) {
-	l.logCtxMessageFormat(ctx, InfoLevel, format, args...)
+	l.logMessageWithFormat(ctx, InfoLevel, format, args...)
 }
 
 func (l SimpleLogger) Warningf(ctx interface{}, format string, args ...interface{}) {
-	l.logCtxMessageFormat(ctx, WarnLevel, format, args...)
+	l.logMessageWithFormat(ctx, WarnLevel, format, args...)
 }
 
 func (l *SimpleLogger) Errorf(ctx interface{}, format string, args ...interface{}) {
-	l.logCtxMessageFormat(ctx, ErrorLevel, format, args...)
+	l.logMessageWithFormat(ctx, ErrorLevel, format, args...)
 }
 
 func (l *SimpleLogger) Fatalf(ctx interface{}, format string, args ...interface{}) {
-	l.logCtxMessageFormat(ctx, FatalLevel, format, args...)
+	l.logMessageWithFormat(ctx, FatalLevel, format, args...)
 }
 
 func (l *SimpleLogger) Panicf(ctx interface{}, format string, args ...interface{}) {
-	l.logCtxMessageFormat(ctx, PanicLevel, format, args...)
+	l.logMessageWithFormat(ctx, PanicLevel, format, args...)
 }
 
-func (l *SimpleLogger) logCtxMessage(ctx interface{}, level LogLevel, message interface{}) {
-	if ctx == nil {
-		panic("Context cannot be nil")
-	}
-	var entry *logrus.Entry
-	switch ctx.(type) {
-	case Context:
-		entry = l.log.WithFields(logrus.Fields{
-			"context_id": ctx.(Context).GetContextId(),
-		})
-	case ContextId:
-		entry = l.log.WithFields(logrus.Fields{
-			"context_id": ctx,
-		})
-	default:
-		panic("First parameter must be Context or Context Id")
-	}
+func (l *SimpleLogger) Printf(ctx interface{}, format string, args ...interface{}) {
+	l.log.Printf(format, args...)
+}
+
+func (l *SimpleLogger) logMessage(ctx interface{}, level LogLevel, message interface{}) {
+	entry := l.getLogEntry(ctx, level)
 	switch level {
 	case TraceLevel:
 		entry.Trace(message)
@@ -188,23 +185,8 @@ func (l *SimpleLogger) logCtxMessage(ctx interface{}, level LogLevel, message in
 	}
 }
 
-func (l *SimpleLogger) logCtxMessageFormat(ctx interface{}, level LogLevel, format string, args ...interface{}) {
-	if ctx == nil {
-		panic("Context cannot be nil")
-	}
-	var entry *logrus.Entry
-	switch ctx.(type) {
-	case Context:
-		entry = l.log.WithFields(logrus.Fields{
-			"context_id": ctx.(Context).GetContextId(),
-		})
-	case ContextId:
-		entry = l.log.WithFields(logrus.Fields{
-			"context_id": ctx,
-		})
-	default:
-		panic("First parameter must be Context or Context Id")
-	}
+func (l *SimpleLogger) logMessageWithFormat(ctx interface{}, level LogLevel, format string, args ...interface{}) {
+	entry := l.getLogEntry(ctx, level)
 	switch level {
 	case TraceLevel:
 		entry.Tracef(format, args...)
@@ -223,37 +205,81 @@ func (l *SimpleLogger) logCtxMessageFormat(ctx interface{}, level LogLevel, form
 	}
 }
 
+func (l *SimpleLogger) getLogEntry(ctx interface{}, level LogLevel) *logrus.Entry {
+	if ctx == nil {
+		panic("Context cannot be nil")
+	}
+
+	var entry *logrus.Entry
+	switch ctx.(type) {
+	case Context:
+		entry = l.log.WithFields(logrus.Fields{
+			"CONTEXT_ID":  ctx.(Context).GetContextId(),
+			"LEVEL_COLOR": l.getLevelColor(level),
+		})
+	case ContextId:
+		entry = l.log.WithFields(logrus.Fields{
+			"CONTEXT_ID":  ctx,
+			"LEVEL_COLOR": l.getLevelColor(level),
+		})
+	default:
+		panic("First parameter must be Context or Context Id")
+	}
+	return entry
+}
+
+func (l *SimpleLogger) getLevelColor(logLevel LogLevel) int {
+	var levelColor int
+	switch logLevel {
+	case DebugLevel, TraceLevel:
+		levelColor = 37 // gray
+	case WarnLevel:
+		levelColor = 33 // yellow
+	case ErrorLevel, FatalLevel, PanicLevel:
+		levelColor = 31 // red
+	case InfoLevel:
+		levelColor = 36 // blue
+	default:
+		levelColor = 37
+	}
+	return levelColor
+}
+
 type LogFormatter struct {
 	logrus.TextFormatter
+	isTerminal bool
+	logFormat  string
 }
 
 func NewLogFormatter() *LogFormatter {
 	formatter := &LogFormatter{}
 	formatter.TimestampFormat = "2006-01-02 15:04:05.000"
+	formatter.logFormat = "[%s] %s %s : %s\n"
 	return formatter
 }
 
 func (f *LogFormatter) Format(entry *logrus.Entry) ([]byte, error) {
-	var levelColor int
-	switch entry.Level {
-	case logrus.DebugLevel, logrus.TraceLevel:
-		levelColor = 37 // gray
-	case logrus.WarnLevel:
-		levelColor = 33 // yellow
-	case logrus.ErrorLevel, logrus.FatalLevel, logrus.PanicLevel:
-		levelColor = 31 // red
-	default:
-		levelColor = 36 // blue
-	}
-
-	var logContextId = ""
-	contextId := entry.Data["context_id"].(ContextId)
-	if contextId != "" {
-		contextIdStr := string(contextId)
-		separatorIndex := strings.Index(contextIdStr, "-")
-		logContextId = contextIdStr[:separatorIndex]
+	contextId := entry.Data["CONTEXT_ID"]
+	if contextId == nil {
+		return []byte(entry.Message + "\n"), nil
 	}
 
 	return []byte(
-		fmt.Sprintf("[%s] \x1b[%dm%-7s\x1b[0m %s : %s\n", entry.Time.Format(f.TimestampFormat), levelColor, strings.ToUpper(entry.Level.String()), logContextId, entry.Message)), nil
+		fmt.Sprintf(f.logFormat, entry.Time.Format(f.TimestampFormat),
+			f.GetLevelString(entry),
+			f.GetSumContextId(contextId.(ContextId)),
+			entry.Message)), nil
+}
+
+func (f *LogFormatter) GetSumContextId(contextId ContextId) string {
+	var sumContextId = string(contextId)
+	return sumContextId[:8]
+}
+
+func (f *LogFormatter) GetLevelString(entry *logrus.Entry) string {
+	levelString := strings.ToUpper(entry.Level.String())
+	if !f.isTerminal {
+		return fmt.Sprintf("%-7s", levelString)
+	}
+	return fmt.Sprintf("\x1b[%dm%-7s\x1b[0m", entry.Data["LEVEL_COLOR"], levelString)
 }
