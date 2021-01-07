@@ -2,23 +2,14 @@ package context
 
 import (
 	"fmt"
+	"github.com/procyon-projects/procyon-configure"
 	"github.com/sirupsen/logrus"
 	"os"
 	"strings"
 )
 
-type LoggingProperties struct {
-	Level    string `yaml:"level" json:"level" default:"TRACE"`
-	FileName string `yaml:"file.name" json:"file.name"`
-	FilePath string `yaml:"file.path" json:"file.path"`
-}
-
-func (properties *LoggingProperties) GetConfigurationPrefix() string {
-	return "logging"
-}
-
 type LoggingConfiguration interface {
-	ApplyLoggingProperties(properties LoggingProperties)
+	ApplyLoggingProperties(properties configure.LoggingProperties)
 }
 
 type LogLevel uint32
@@ -67,7 +58,7 @@ func NewSimpleLogger() *SimpleLogger {
 	return log
 }
 
-func (l *SimpleLogger) ApplyLoggingProperties(properties LoggingProperties) {
+func (l *SimpleLogger) ApplyLoggingProperties(properties configure.LoggingProperties) {
 	loggerLevel := logrus.DebugLevel
 	switch properties.Level {
 	case "TRACE":
@@ -85,7 +76,7 @@ func (l *SimpleLogger) ApplyLoggingProperties(properties LoggingProperties) {
 	case "PANIC":
 		loggerLevel = logrus.PanicLevel
 	default:
-		loggerLevel = logrus.TraceLevel
+		loggerLevel = logrus.DebugLevel
 	}
 	l.log.Level = loggerLevel
 
