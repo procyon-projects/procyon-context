@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/procyon-projects/goo"
 	core "github.com/procyon-projects/procyon-core"
+	"strings"
 )
 
 type ConfigurationPropertiesBinder struct {
@@ -45,25 +46,48 @@ func (binder ConfigurationPropertiesBinder) bindTargetFields(prefix string, targ
 		if err != nil {
 			bindTag, err = field.GetTagByName("yaml")
 		}
+
 		if err == nil {
 			value := bindTag.Value
+			splitResult := strings.Split(value, ",")
+
+			tagValue := ""
+			omitEmpty := false
+			if len(splitResult) == 2 {
+				tagValue = strings.Trim(splitResult[0], " ")
+				if strings.Trim(splitResult[1], " ") == "omitempty" {
+					omitEmpty = true
+				}
+			} else {
+				tagValue = value
+			}
+
 			defaultTag, err = field.GetTagByName("default")
 			if err != nil && value != "" {
-				binder.bindTargetField(field, target, binder.getFullPropertyName(prefix, value), "")
+				binder.bindTargetField(field, target, binder.getFullPropertyName(prefix, tagValue), "", omitEmpty)
 			} else if err == nil && defaultTag.Value != "" {
-				binder.bindTargetField(field, target, binder.getFullPropertyName(prefix, value), defaultTag.Value)
+				binder.bindTargetField(field, target, binder.getFullPropertyName(prefix, tagValue), defaultTag.Value, omitEmpty)
 			}
 		}
 	}
 	return nil
 }
 
-func (binder ConfigurationPropertiesBinder) bindTargetField(field goo.Field, instance interface{}, propertyName string, defaultValue string) error {
+func (binder ConfigurationPropertiesBinder) bindTargetField(field goo.Field, instance interface{}, propertyName string, defaultValue string, omitEmpty bool) error {
 	propertyValue := binder.env.GetProperty(propertyName, defaultValue)
 	if propertyValue != nil {
+
+		switch propertyValue.(type) {
+		case string:
+			if omitEmpty && propertyValue.(string) == "" {
+				return nil
+			}
+		}
+
 		if field.CanSet() {
 			propertyValueType := goo.GetType(propertyValue)
 			fieldType := field.GetType()
+
 			if propertyValueType.GetGoType() == fieldType.GetGoType() {
 				field.SetValue(instance, propertyValue)
 			} else if binder.typeConverterService.CanConvert(propertyValueType, fieldType) {
